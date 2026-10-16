@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Настройки для превращения в нативное iOS-приложение -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="TweekCal">
+  <title>TweekCal</title>
+
+  <style>
+    :root {
+      --bg: #fdfdfd;
+      --card: #ffffff;
+      --text: #1c1c1e;
+      --muted: #8e8e93;
+      --border: #e5e5ea;
+      --accent: #000000;
+      --today: #ff3b30;
+      --tag-blue: #007aff;
+      --tag-green: #34c759;
+      --tag-orange: #ff9500;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      user-select: none;
+    }
+
+    /* Шапка и переключатель режимов */
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(253, 253, 253, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-month {
+      font-size: 18px;
+      font-weight: 700;
+      min-width: 130px;
+    }
+
+    button {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 12px 16px 80px 16px;
+    }
+
+    /* Вид 1: Неделя в стиле Tweek */
+    .day-block {
+      padding: 14px 0;
+      border-bottom: 2px solid var(--text);
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .day-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .day-name.is-today {
+      color: var(--today);
+    }
+
+    .day-date {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+    }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border: 1.5px solid var(--muted);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .task-item.done .checkbox {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .task-text {
+      flex-grow: 1;
+      word-break: break-word;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-mini {
+      padding: 2px 6px;
+      font-size: 11px;
+      color: var(--muted);
+      border-color: transparent;
+      background: #f2f2f7;
+    }
+
+    .add-input {
+      width: 100%;
+      border: none;
+      padding: 10px 0 4px 0;
+      font-size: 15px;
+      background: transparent;
+      outline: none;
+      color: var(--text);
+    }
+
+    .add-input::placeholder {
+      color: #c7c7cc;
+    }
+
+    /* Вид 2: Полноценный календарь (Сетка месяца) */
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .weekday-label {
+      background: #f2f2f7;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 0;
+      color: var(--muted);
+    }
+
+    .month-cell {
+      background: var(--card);
+      min-height: 76px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      cursor: pointer;
+    }
+
+    .month-cell.other-month {
+      background: #fafafa;
+      color: #d1d1d6;
+    }
+
+    .month-cell.selected {
+      outline: 2px solid var(--accent);
+      z-index: 2;
+    }
+
+    .cell-number {
+      font-size: 12px;
+      font-weight: 600;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .cell-number.is-today {
+      background: var(--today);
+      color: #fff;
+    }
+
+    .cell-pill {
+      font-size: 10px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: #e5e5ea;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cell-pill.done {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    /* Секция Someday */
+    .someday-box {
+      margin-top: 28px;
+      background: #f2f2f7;
+      padding: 16px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="nav-group">
+    <button onclick="shiftPeriod(-1)">←</button>
+    <div class="title-month" id="headerTitle">Октябрь</div>
+    <button onclick="shiftPeriod(1)">→</button>
+    <button onclick="goToday()" style="font-size:12px">Сегодня</button>
+  </div>
+  <div class="nav-group">
+    <button id="btnWeek" class="active" onclick="setView('week')">Неделя</button>
+    <button id="btnMonth" onclick="setView('month')">Месяц</button>
+  </div>
+</header>
+
+<div class="container">
+  <div id="mainView"></div>
+
+  <!-- Секция нераспределенных задач (Someday) -->
+  <div class="someday-box">
+    <div class="day-header">
+      <span class="day-name">Когда-нибудь (Someday)</span>
+      <span class="day-date">Без даты</span>
+    </div>
+    <ul class="task-list" id="somedayList"></ul>
+    <input type="text" class="add-input" placeholder="+ Добавить задачу без даты..." 
+           onkeydown="if(event.key==='Enter') addTask(null, this)">
+  </div>
+</div>
+
+<script>
+  // --- СОСТОЯНИЕ И ЛОКАЛЬНАЯ БАЗА (Offline-First) ---
+  const STORAGE_KEY = 'tweek_cal_tasks_v1';
+  let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let currentView = 'week'; // 'week' | 'month'
+  let anchorDate = new Date();
+  let selectedDateStr = toISODate(new Date());
+
+  const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const DAYS_RU = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+  const SHORT_DAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+  function toISODate(d) {
+    const z = n => ('0' + n).slice(-2);
+    return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+  }
+
+  function saveTasks() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    render();
+  }
+
+  // Автоперенос невыполненных задач с прошлых дней на сегодня (фишка Tweek)
+  function autoRolloverPastTasks() {
+    const todayStr = toISODate(new Date());
+    let changed = false;
+    tasks.forEach(t => {
+      if (t.date && t.date < todayStr && !t.completed) {
+        t.date = todayStr;
+        t.updatedAt = Date.now();
+        changed = true;
+      }
+    });
+    if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }
+
+  // --- ОПЕРАЦИИ С ЗАДАЧАМИ ---
+  function addTask(dateStr, inputEl) {
+    const title = inputEl.value.trim();
+    if (!title) return;
+    tasks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      title,
+      date: dateStr, // YYYY-MM-DD или null для Someday
+      completed: false,
+      updatedAt: Date.now()
+    });
+    inputEl.value = '';
+    saveTasks();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(x => x.id === id);
+    if (t) {
+      t.completed = !t.completed;
+      t.updatedAt = Date.now();
+      saveTasks();
+    }
+  }
+
+  // Перенос задачи на следующий день (или на сегодня, если она из Someday)
+  function moveTaskTomorrow(id) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    if (!t.date) {
+      t.date = toISODate(new Date());
+    } else {
+      const [y, m, d] = t.date.split('-').map(Number);
+      const next = new Date(y, m - 1, d + 1);
+      t.date = toISODate(next);
+    }
+    t.updatedAt = Date.now();
+    saveTasks();
+  }
+
+  function moveTaskToSomeday(id) {
+    const t = tasks.find(x => x.id === id);
+    if (t) {
+      t.date = null;
+      t.updatedAt = Date.now();
+      saveTasks();
+    }
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(x => x.id !== id);
+    saveTasks();
+  }
+
+  // --- НАВИГАЦИЯ ---
+  function setView(v) {
+    currentView = v;
+    document.getElementById('btnWeek').classList.toggle('active', v === 'week');
+    document.getElementById('btnMonth').classList.toggle('active', v === 'month');
+    render();
+  }
+
+  function shiftPeriod(dir) {
+    if (currentView === 'week') {
+      anchorDate.setDate(anchorDate.getDate() + dir * 7);
+    } else {
+      anchorDate.setMonth(anchorDate.getMonth() + dir);
+    }
+    render();
+  }
+
+  function goToday() {
+    anchorDate = new Date();
+    selectedDateStr = toISODate(anchorDate);
+    render();
+  }
+
+  // --- ОТРИСОВКА ИНТЕРФЕЙСА ---
+  function renderTaskItem(t) {
+    return `
+      <li class="task-item ${t.completed ? 'done' : ''}">
+        <div class="checkbox" onclick="toggleTask('${t.id}')">${t.completed ? '✓' : ''}</div>
+        <span class="task-text">${escapeHTML(t.title)}</span>
+        <div class="task-actions">
+          <button class="btn-mini" title="Перенести на +1 день / Сегодня" onclick="moveTaskTomorrow('${t.id}')">→</button>
+          ${t.date ? `<button class="btn-mini" title="В Someday" onclick="moveTaskToSomeday('${t.id}')">∞</button>` : ''}
+          <button class="btn-mini" onclick="deleteTask('${t.id}')">✕</button>
+        </div>
+      </li>
+    `;
+  }
+
+  function render() {
+    const todayStr = toISODate(new Date());
+    document.getElementById('headerTitle').textContent = 
+      `${MONTHS_RU[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
+
+    const main = document.getElementById('mainView');
+
+    if (currentView === 'week') {
+      // Находим понедельник текущей выбранной недели
+      const d = new Date(anchorDate);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(d.setDate(diff));
+
+      let html = '';
+      for (let i = 0; i < 7; i++) {
+        const cur = new Date(monday);
+        cur.setDate(monday.getDate() + i);
+        const dateStr = toISODate(cur);
+        const dayTasks = tasks.filter(t => t.date === dateStr);
+        const isToday = dateStr === todayStr;
+
+        html += `
+          <div class="day-block">
+            <div class="day-header">
+              <span class="day-name ${isToday ? 'is-today' : ''}">${DAYS_RU[cur.getDay()]}</span>
+              <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
+            </div>
+            <ul class="task-list">
+              ${dayTasks.map(renderTaskItem).join('')}
+            </ul>
+            <input type="text" class="add-input" placeholder="+ Добавить задачу..." 
+                   onkeydown="if(event.key==='Enter') addTask('${dateStr}', this)">
+          </div>
+        `;
+      }
+      main.innerHTML = html;
+
+    } else {
+      // Сетка полноценного календаря на месяц
+      const year = anchorDate.getFullYear();
+      const month = anchorDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const startOffset = (firstDay.getDay() + 6) % 7; // Пн = 0
+      const startDate = new Date(year, month, 1 - startOffset);
+
+      let gridHtml = `<div class="month-grid">`;
+      SHORT_DAYS_RU.forEach(label => {
+        gridHtml += `<div class="weekday-label">${label}</div>`;
+      });
+
+      for (let i = 0; i < 42; i++) {
+        const cur = new Date(startDate);
+        cur.setDate(startDate.getDate() + i);
+        const dateStr = toISODate(cur);
+        const inMonth = cur.getMonth() === month;
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === selectedDateStr;
+        const dayTasks = tasks.filter(t => t.date === dateStr);
+
+        gridHtml += `
+          <div class="month-cell ${inMonth ? '' : 'other-month'} ${isSelected ? 'selected' : ''}" 
+               onclick="selectMonthDay('${dateStr}')">
+            <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
+            ${dayTasks.slice(0, 3).map(t => `<div class="cell-pill ${t.completed ? 'done' : ''}">${escapeHTML(t.title)}</div>`).join('')}
+            ${dayTasks.length > 3 ? `<div class="cell-pill">+ ещё ${dayTasks.length - 3}</div>` : ''}
+          </div>
+        `;
+      }
+      gridHtml += `</div>`;
+
+      // Список задач выбранного в календаре дня под сеткой
+      const selTasks = tasks.filter(t => t.date === selectedDateStr);
+      gridHtml += `
+        <div class="day-block">
+          <div class="day-header">
+            <span class="day-name">Задачи на ${selectedDateStr}</span>
+          </div>
+          <ul class="task-list">${selTasks.map(renderTaskItem).join('')}</ul>
+          <input type="text" class="add-input" placeholder="+ Добавить на ${selectedDateStr}..." 
+                 onkeydown="if(event.key==='Enter') addTask('${selectedDateStr}', this)">
+        </div>
+      `;
+      main.innerHTML = gridHtml;
+    }
+
+    // Отрисовка Someday
+    const somedayTasks = tasks.filter(t => !t.date);
+    document.getElementById('somedayList').innerHTML = somedayTasks.map(renderTaskItem).join('');
+  }
+
+  function selectMonthDay(dateStr) {
+    selectedDateStr = dateStr;
+    render();
+  }
+
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  }
+
+  // Запуск
+  autoRolloverPastTasks();
+  render();
+</script>
+</body>
+</html>
