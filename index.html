@@ -10,8 +10,6 @@
 
   <!-- Иконка для домашнего экрана iOS -->
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231c1c1e'/><rect x='28' y='36' width='124' height='22' rx='6' fill='%23ff3b30'/><circle cx='46' cy='88' r='8' fill='%2334c759'/><rect x='66' y='82' width='80' height='12' rx='6' fill='%23ffffff'/><circle cx='46' cy='126' r='8' fill='%23007aff'/><rect x='66' y='120' width='56' height='12' rx='6' fill='%238e8e93'/></svg>">
-
-  <!-- Встроенный Web Manifest -->
   <link rel="manifest" href='data:application/manifest+json,{"name":"TweekCal Pro","short_name":"TweekCal","start_url":".","display":"standalone","background_color":"#fdfdfd","theme_color":"#1c1c1e"}'>
 
   <style>
@@ -41,10 +39,7 @@
       --today: #ff453a;
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
@@ -56,7 +51,6 @@
       overscroll-behavior-y: none;
     }
 
-    /* Верхняя панель */
     header {
       position: sticky;
       top: 0;
@@ -103,18 +97,6 @@
       border-color: var(--accent);
     }
 
-    .sync-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #8e8e93;
-      display: inline-block;
-      margin-right: 4px;
-    }
-    .sync-dot.synced { background: #34c759; }
-    .sync-dot.pending { background: #ff9500; }
-    .sync-dot.error { background: #ff3b30; }
-
     .search-bar {
       width: 100%;
       background: var(--surface-2);
@@ -135,7 +117,6 @@
       padding: 10px 16px 100px 16px;
     }
 
-    /* Вид Недели (Tweek) */
     .day-block {
       padding: 14px 0 8px 0;
       border-bottom: 2px solid var(--line);
@@ -148,18 +129,11 @@
       margin-bottom: 6px;
     }
 
-    .day-name {
-      font-size: 16px;
-      font-weight: 700;
-    }
+    .day-name { font-size: 16px; font-weight: 700; }
     .day-name.is-today { color: var(--today); }
     .day-date { font-size: 13px; color: var(--muted); }
 
-    .task-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+    .task-list { list-style: none; padding: 0; margin: 0; }
 
     .task-item {
       display: flex;
@@ -202,16 +176,8 @@
       flex-shrink: 0;
     }
 
-    .task-body {
-      flex-grow: 1;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .task-text {
-      display: block;
-      word-break: break-word;
-    }
+    .task-body { flex-grow: 1; overflow: hidden; cursor: pointer; }
+    .task-text { display: block; word-break: break-word; }
 
     .task-meta {
       display: flex;
@@ -240,7 +206,6 @@
     }
     .add-input::placeholder { color: var(--muted); opacity: 0.6; }
 
-    /* Сетка Месяца */
     .month-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -297,25 +262,10 @@
     }
     .cell-pill.done { opacity: 0.4; text-decoration: line-through; }
 
-    /* Почасовой таймлайн (Вид Дня) */
-    .timeline-row {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      min-height: 48px;
-    }
-    .timeline-hour {
-      width: 52px;
-      font-size: 12px;
-      color: var(--muted);
-      padding-top: 6px;
-      flex-shrink: 0;
-    }
-    .timeline-slot {
-      flex-grow: 1;
-      padding: 4px 0;
-    }
+    .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 48px; }
+    .timeline-hour { width: 52px; font-size: 12px; color: var(--muted); padding-top: 6px; flex-shrink: 0; }
+    .timeline-slot { flex-grow: 1; padding: 4px 0; }
 
-    /* Блок Someday */
     .someday-box {
       margin-top: 24px;
       background: var(--surface-2);
@@ -323,7 +273,6 @@
       border-radius: 12px;
     }
 
-    /* Модальные окна / Bottom Sheet */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -352,15 +301,8 @@
       margin-bottom: 12px;
     }
 
-    .form-row {
-      margin-bottom: 12px;
-    }
-    .form-label {
-      font-size: 12px;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 4px;
-    }
+    .form-row { margin-bottom: 12px; }
+    .form-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
     .form-input, .form-textarea {
       width: 100%;
       padding: 9px 10px;
@@ -371,35 +313,15 @@
       font-size: 15px;
       font-family: inherit;
     }
-    .form-row-inline {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+    .form-row-inline { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    .color-picker {
-      display: flex;
-      gap: 10px;
-      margin-top: 4px;
-    }
+    .color-picker { display: flex; gap: 10px; margin-top: 4px; }
     .color-Swatch {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
     }
-    .color-Swatch.selected {
-      border-color: var(--text);
-      transform: scale(1.12);
-    }
+    .color-Swatch.selected { border-color: var(--text); transform: scale(1.12); }
 
-    .subtask-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 0;
-    }
+    .subtask-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
   </style>
 </head>
 <body>
@@ -415,17 +337,13 @@
     <div class="nav-group">
       <button onclick="toggleSearch()" title="Поиск">🔍</button>
       <button onclick="toggleTheme()" title="Тема">◐</button>
-      <button onclick="openSyncModal()" title="Синхронизация и бэкап">
-        <span class="sync-dot" id="syncDot"></span>☁️
-      </button>
+      <button onclick="openBackupModal()" title="Резервная копия">💾</button>
     </div>
   </div>
-  <div class="nav-group" style="justify-content: space-between;">
-    <div class="nav-group" style="width:100%">
-      <button id="btnWeek" class="active" style="flex:1" onclick="setView('week')">Неделя</button>
-      <button id="btnMonth" style="flex:1" onclick="setView('month')">Месяц</button>
-      <button id="btnDay" style="flex:1" onclick="setView('day')">День (Часы)</button>
-    </div>
+  <div class="nav-group" style="width:100%">
+    <button id="btnWeek" class="active" style="flex:1" onclick="setView('week')">Неделя</button>
+    <button id="btnMonth" style="flex:1" onclick="setView('month')">Месяц</button>
+    <button id="btnDay" style="flex:1" onclick="setView('day')">День (Часы)</button>
   </div>
   <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по задачам и заметкам..." oninput="render()">
 </header>
@@ -433,7 +351,6 @@
 <div class="container">
   <div id="mainView"></div>
 
-  <!-- Секция Someday -->
   <div class="someday-box" id="somedayContainer">
     <div class="day-header">
       <span class="day-name">Когда-нибудь (Someday)</span>
@@ -445,7 +362,7 @@
   </div>
 </div>
 
-<!-- ШТОРКА РЕДАКТИРОВАНИЯ ЗАДАЧИ -->
+<!-- ШТОРКА ДЕТАЛЕЙ ЗАДАЧИ -->
 <div class="modal-backdrop" id="taskModal" onclick="if(event.target===this) closeTaskModal()">
   <div class="sheet">
     <div class="sheet-header">
@@ -479,7 +396,7 @@
       <label class="form-label">Заметка</label>
       <textarea id="editNotes" class="form-textarea" rows="3" placeholder="Ссылки, детали, мысли..."></textarea>
     </div>
-    <div class="form-row" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="form-row">
       <label style="font-size:14px">
         <input type="checkbox" id="editRollover"> Автоперенос на сегодня, если просрочено
       </label>
@@ -491,56 +408,36 @@
   </div>
 </div>
 
-<!-- ШТОРКА СИНХРОНИЗАЦИИ И БЭКАПА -->
-<div class="modal-backdrop" id="syncModal" onclick="if(event.target===this) closeSyncModal()">
+<!-- ШТОРКА РЕЗЕРВНОЙ КОПИИ -->
+<div class="modal-backdrop" id="backupModal" onclick="if(event.target===this) closeBackupModal()">
   <div class="sheet">
     <div class="sheet-header">
-      <strong>Облако и Резервная копия</strong>
-      <button onclick="closeSyncModal()">Закрыть</button>
+      <strong>Резервная копия данных</strong>
+      <button onclick="closeBackupModal()">Закрыть</button>
     </div>
     <p style="font-size:13px; color:var(--muted); margin-top:0;">
-      Для бесплатной синхронизации между iPhone и ПК укажите URL и Anon Key вашего проекта Supabase (таблица <code>tasks</code>).
+      Все задачи хранятся локально в памяти вашего iPhone. Вы можете скачать резервную копию в файл или восстановить данные из файла.
     </p>
-    <div class="form-row">
-      <label class="form-label">Supabase Project URL</label>
-      <input type="url" id="sbUrl" class="form-input" placeholder="https://xxxx.supabase.co">
-    </div>
-    <div class="form-row">
-      <label class="form-label">Supabase Anon Key</label>
-      <input type="password" id="sbKey" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5...">
-    </div>
-    <div style="display:flex; gap:8px; margin-bottom:18px;">
-      <button class="active" onclick="saveSyncConfig()">Сохранить и синхронизировать</button>
-      <button onclick="syncNow()">Обновить сейчас</button>
-    </div>
-    <hr style="border:none; border-top:1px solid var(--border); margin:14px 0;">
-    <div class="form-row">
-      <label class="form-label">Локальный бэкап (JSON файл)</label>
-      <div style="display:flex; gap:8px; margin-top:6px;">
-        <button onclick="exportJSON()">Скачать бэкап (.json)</button>
-        <button onclick="document.getElementById('importFile').click()">Загрузить из файла</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-      </div>
+    <div class="form-row" style="display:flex; gap:8px; margin-top:12px;">
+      <button onclick="exportJSON()" style="flex:1">Скачать бэкап (.json)</button>
+      <button onclick="document.getElementById('importFile').click()" style="flex:1">Загрузить из файла</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
     </div>
   </div>
 </div>
 
 <script>
-  // --- РЕГИСТРАЦИЯ SERVICE WORKER ДЛЯ АВИАРЕЖИМА ---
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    });
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
   }
 
-  // --- КОНСТАНТЫ И СОСТОЯНИЕ ---
   const STORAGE_KEY = 'tweek_cal_tasks_v1';
   const CONFIG_KEY = 'tweek_cal_config_v1';
   const COLORS = ['transparent', '#ff3b30', '#ff9500', '#34c759', '#007aff', '#af52de'];
 
   let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","sbUrl":"","sbKey":"","lastSync":0}');
-  let currentView = 'week'; // 'week' | 'month' | 'day'
+  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light"}');
+  let currentView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
   let editingTaskId = null;
@@ -557,17 +454,12 @@
     return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
   }
 
-  function saveConfig() {
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-  }
-
-  function saveTasks(triggerSync = true) {
+  function saveConfig() { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); }
+  function saveTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     render();
-    if (triggerSync) syncNow();
   }
 
-  // Автоперенос просроченных задач (Rollover)
   function autoRolloverPastTasks() {
     const todayStr = toISODate(new Date());
     let changed = false;
@@ -575,14 +467,12 @@
       if (!t.deleted && t.date && t.date < todayStr && !t.completed && t.rollover !== false) {
         t.date = todayStr;
         t.updatedAt = Date.now();
-        t.syncStatus = 'pending';
         changed = true;
       }
     });
     if (changed) saveTasks();
   }
 
-  // --- CRUD ЗАДАЧ ---
   function addTask(dateStr, timeStr, inputEl) {
     const title = inputEl.value.trim();
     if (!title) return;
@@ -597,8 +487,7 @@
       completed: false,
       rollover: true,
       deleted: false,
-      updatedAt: Date.now(),
-      syncStatus: 'pending'
+      updatedAt: Date.now()
     });
     inputEl.value = '';
     saveTasks();
@@ -609,7 +498,6 @@
     if (t) {
       t.completed = !t.completed;
       t.updatedAt = Date.now();
-      t.syncStatus = 'pending';
       saveTasks();
     }
   }
@@ -624,11 +512,9 @@
       t.date = toISODate(new Date(y, m - 1, d + 1));
     }
     t.updatedAt = Date.now();
-    t.syncStatus = 'pending';
     saveTasks();
   }
 
-  // --- МОДАЛКА ДЕТАЛЕЙ ЗАДАЧИ ---
   function openTaskModal(id) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
@@ -660,8 +546,7 @@
 
   function renderSubtasks(t) {
     const list = t.subtasks || [];
-    const container = document.getElementById('subtasksList');
-    container.innerHTML = list.map((s, idx) => `
+    document.getElementById('subtasksList').innerHTML = list.map((s, idx) => `
       <div class="subtask-row">
         <input type="checkbox" ${s.done ? 'checked' : ''} onchange="toggleSubtask(${idx})">
         <span style="flex:1; font-size:14px; ${s.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${escapeHTML(s.text)}</span>
@@ -691,10 +576,7 @@
 
   function removeSubtask(idx) {
     const t = tasks.find(x => x.id === editingTaskId);
-    if (t && t.subtasks) {
-      t.subtasks.splice(idx, 1);
-      renderSubtasks(t);
-    }
+    if (t && t.subtasks) { t.subtasks.splice(idx, 1); renderSubtasks(t); }
   }
 
   function setEditDateToSomeday() {
@@ -714,7 +596,6 @@
         t.color = editingColor;
         t.rollover = document.getElementById('editRollover').checked;
         t.updatedAt = Date.now();
-        t.syncStatus = 'pending';
         saveTasks();
       }
     }
@@ -725,17 +606,11 @@
   function deleteActiveTask() {
     if (!editingTaskId) return;
     const t = tasks.find(x => x.id === editingTaskId);
-    if (t) {
-      t.deleted = true;
-      t.updatedAt = Date.now();
-      t.syncStatus = 'pending';
-      saveTasks();
-    }
+    if (t) { t.deleted = true; t.updatedAt = Date.now(); saveTasks(); }
     editingTaskId = null;
     document.getElementById('taskModal').classList.remove('open');
   }
 
-  // --- НАВИГАЦИЯ И ТЕМА ---
   function setView(v) {
     currentView = v;
     document.getElementById('btnWeek').classList.toggle('active', v === 'week');
@@ -773,7 +648,30 @@
     else { sb.value = ''; render(); }
   }
 
-  // --- ОТРИСОВКА ---
+  function openBackupModal() { document.getElementById('backupModal').classList.add('open'); }
+  function closeBackupModal() { document.getElementById('backupModal').classList.remove('open'); }
+
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `tweekcal-backup-${toISODate(new Date())}.json`;
+    a.click();
+  }
+
+  function importJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (Array.isArray(imported)) { tasks = imported; saveTasks(); closeBackupModal(); }
+      } catch (err) { alert('Ошибка чтения файла бэкапа'); }
+    };
+    reader.readAsText(file);
+  }
+
   function getActiveTasks() {
     const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
     return tasks.filter(t => {
@@ -879,7 +777,7 @@
         <div class="day-block">
           <div class="day-header">
             <span class="day-name">Выбран день: ${selectedDateStr}</span>
-            <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">Открыть по часам →</button>
+            <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
           </div>
           <ul class="task-list">${selTasks.map(renderTaskItem).join('')}</ul>
           <input type="text" class="add-input" placeholder="+ Добавить на ${selectedDateStr}..." 
@@ -922,10 +820,8 @@
       main.innerHTML = html;
     }
 
-    // Someday
     const somedayTasks = visibleTasks.filter(t => !t.date);
     document.getElementById('somedayList').innerHTML = somedayTasks.map(renderTaskItem).join('');
-    updateSyncIndicator();
   }
 
   function selectMonthDay(dateStr) {
@@ -942,141 +838,12 @@
     setView('day');
   }
 
-  // --- СИНХРОНИЗАЦИЯ (SUPABASE REST) И БЭКАП ---
-  function updateSyncIndicator(state) {
-    const dot = document.getElementById('syncDot');
-    const hasPending = tasks.some(t => t.syncStatus === 'pending');
-    dot.className = 'sync-dot ' + (state === 'error' ? 'error' : (hasPending ? 'pending' : 'synced'));
-  }
-
-  function openSyncModal() {
-    document.getElementById('sbUrl').value = config.sbUrl || '';
-    document.getElementById('sbKey').value = config.sbKey || '';
-    document.getElementById('syncModal').classList.add('open');
-  }
-
-  function closeSyncModal() {
-    document.getElementById('syncModal').classList.remove('open');
-  }
-
-  function saveSyncConfig() {
-    config.sbUrl = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
-    config.sbKey = document.getElementById('sbKey').value.trim();
-    saveConfig();
-    syncNow();
-    closeSyncModal();
-  }
-
-async function syncNow() {
-    const dot = document.getElementById('syncDot');
-    if (!config.sbUrl || !config.sbKey) {
-      updateSyncIndicator();
-      return;
-    }
-    if (!navigator.onLine) {
-      updateSyncIndicator('pending');
-      return;
-    }
-
-    const headers = {
-      'apikey': config.sbKey,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=merge-duplicates'
-    };
-    // Если используется классический JWT-ключ (начинается с eyJ), добавляем Authorization
-    if (config.sbKey.startsWith('eyJ')) {
-      headers['Authorization'] = 'Bearer ' + config.sbKey;
-    }
-
-    try {
-      // 1. Отправляем локальные изменения (Push)
-      const pending = tasks.filter(t => t.syncStatus === 'pending');
-      if (pending.length > 0) {
-        const payload = pending.map(t => ({
-          id: String(t.id),
-          updated_at: Number(t.updatedAt || Date.now()),
-          payload: t
-        }));
-
-        const resPush = await fetch(`${config.sbUrl}/rest/v1/tasks?on_conflict=id`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload)
-        });
-
-        if (!resPush.ok) {
-          const errText = await resPush.text();
-          throw new Error(`Ошибка отправки (${resPush.status}): ${errText}`);
-        }
-
-        // Сразу помечаем задачи как синхронизированные и сохраняем локально
-        pending.forEach(t => t.syncStatus = 'synced');
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      }
-
-      // 2. Забираем свежие данные из облака (Pull)
-      const resPull = await fetch(`${config.sbUrl}/rest/v1/tasks?select=*`, { headers });
-      if (!resPull.ok) {
-        const errText = await resPull.text();
-        throw new Error(`Ошибка чтения (${resPull.status}): ${errText}`);
-      }
-
-      const remoteRows = await resPull.json();
-      remoteRows.forEach(row => {
-        const remoteTask = row.payload;
-        if (!remoteTask || !remoteTask.id) return;
-        remoteTask.syncStatus = 'synced';
-        const localIdx = tasks.findIndex(x => x.id === remoteTask.id);
-        if (localIdx === -1) {
-          tasks.push(remoteTask);
-        } else if (Number(row.updated_at) > Number(tasks[localIdx].updatedAt || 0)) {
-          tasks[localIdx] = remoteTask;
-        }
-      });
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      render();
-      dot.className = 'sync-dot synced';
-    } catch (e) {
-      console.error('Sync error:', e);
-      dot.className = 'sync-dot error';
-      alert('Синхронизация не прошла:\n' + e.message);
-    }
-  }
-  window.addEventListener('online', syncNow);
-
-  function exportJSON() {
-    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `tweekcal-backup-${toISODate(new Date())}.json`;
-    a.click();
-  }
-
-  function importJSON(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const imported = JSON.parse(ev.target.result);
-        if (Array.isArray(imported)) {
-          tasks = imported;
-          saveTasks();
-          closeSyncModal();
-        }
-      } catch (err) { alert('Ошибка чтения JSON файла'); }
-    };
-    reader.readAsText(file);
-  }
-
   function escapeHTML(str) {
     return String(str || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
 
   autoRolloverPastTasks();
   render();
-  syncNow();
 </script>
 </body>
 </html>
