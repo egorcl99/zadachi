@@ -967,50 +967,82 @@
     closeSyncModal();
   }
 
-  async function syncNow() {
-    if (!config.sbUrl || !config.sbKey || !navigator.onLine) return;
+async function syncNow() {
+    const dot = document.getElementById('syncDot');
+    if (!config.sbUrl || !config.sbKey) {
+      updateSyncIndicator();
+      return;
+    }
+    if (!navigator.onLine) {
+      updateSyncIndicator('pending');
+      return;
+    }
+
     const headers = {
       'apikey': config.sbKey,
-      'Authorization': 'Bearer ' + config.sbKey,
       'Content-Type': 'application/json',
       'Prefer': 'resolution=merge-duplicates'
     };
+    // Если используется классический JWT-ключ (начинается с eyJ), добавляем Authorization
+    if (config.sbKey.startsWith('eyJ')) {
+      headers['Authorization'] = 'Bearer ' + config.sbKey;
+    }
+
     try {
+      // 1. Отправляем локальные изменения (Push)
       const pending = tasks.filter(t => t.syncStatus === 'pending');
       if (pending.length > 0) {
-        const payload = pending.map(t => ({ id: t.id, updated_at: t.updatedAt, payload: t }));
-        const resPush = await fetch(`${config.sbUrl}/rest/v1/tasks`, {
+        const payload = pending.map(t => ({
+          id: String(t.id),
+          updated_at: Number(t.updatedAt || Date.now()),
+          payload: t
+        }));
+
+        const resPush = await fetch(`${config.sbUrl}/rest/v1/tasks?on_conflict=id`, {
           method: 'POST',
           headers,
           body: JSON.stringify(payload)
         });
-        if (!resPush.ok) throw new Error('Push error');
+
+        if (!resPush.ok) {
+          const errText = await resPush.text();
+          throw new Error(`Ошибка отправки (${resPush.status}): ${errText}`);
+        }
+
+        // Сразу помечаем задачи как синхронизированные и сохраняем локально
         pending.forEach(t => t.syncStatus = 'synced');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       }
 
+      // 2. Забираем свежие данные из облака (Pull)
       const resPull = await fetch(`${config.sbUrl}/rest/v1/tasks?select=*`, { headers });
-      if (resPull.ok) {
-        const remoteRows = await resPull.json();
-        remoteRows.forEach(row => {
-          const remoteTask = row.payload;
-          if (!remoteTask || !remoteTask.id) return;
-          const localIdx = tasks.findIndex(x => x.id === remoteTask.id);
-          if (localIdx === -1) {
-            remoteTask.syncStatus = 'synced';
-            tasks.push(remoteTask);
-          } else if (row.updated_at > (tasks[localIdx].updatedAt || 0)) {
-            remoteTask.syncStatus = 'synced';
-            tasks[localIdx] = remoteTask;
-          }
-        });
-        saveTasks(false);
+      if (!resPull.ok) {
+        const errText = await resPull.text();
+        throw new Error(`Ошибка чтения (${resPull.status}): ${errText}`);
       }
-      updateSyncIndicator('synced');
+
+      const remoteRows = await resPull.json();
+      remoteRows.forEach(row => {
+        const remoteTask = row.payload;
+        if (!remoteTask || !remoteTask.id) return;
+        remoteTask.syncStatus = 'synced';
+        const localIdx = tasks.findIndex(x => x.id === remoteTask.id);
+        if (localIdx === -1) {
+          tasks.push(remoteTask);
+        } else if (Number(row.updated_at) > Number(tasks[localIdx].updatedAt || 0)) {
+          tasks[localIdx] = remoteTask;
+        }
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      render();
+      dot.className = 'sync-dot synced';
     } catch (e) {
-      updateSyncIndicator('error');
+      console.error('Sync error:', e);
+      dot.className = 'sync-dot error';
+      alert('Синхронизация не прошла:\n' + e.message);
     }
   }
-
   window.addEventListener('online', syncNow);
 
   function exportJSON() {
