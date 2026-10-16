@@ -526,4 +526,525 @@
 </div>
 
 <script>
-  // --- РЕГИ
+  // --- РЕГИСТРАЦИЯ SERVICE WORKER ДЛЯ АВИАРЕЖИМА ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  // --- КОНСТАНТЫ И СОСТОЯНИЕ ---
+  const STORAGE_KEY = 'tweek_cal_tasks_v1';
+  const CONFIG_KEY = 'tweek_cal_config_v1';
+  const COLORS = ['transparent', '#ff3b30', '#ff9500', '#34c759', '#007aff', '#af52de'];
+
+  let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","sbUrl":"","sbKey":"","lastSync":0}');
+  let currentView = 'week'; // 'week' | 'month' | 'day'
+  let anchorDate = new Date();
+  let selectedDateStr = toISODate(new Date());
+  let editingTaskId = null;
+  let editingColor = 'transparent';
+
+  const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const DAYS_RU = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+  const SHORT_DAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+  document.documentElement.setAttribute('data-theme', config.theme || 'light');
+
+  function toISODate(d) {
+    const z = n => ('0' + n).slice(-2);
+    return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+  }
+
+  function saveConfig() {
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+  }
+
+  function saveTasks(triggerSync = true) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    render();
+    if (triggerSync) syncNow();
+  }
+
+  // Автоперенос просроченных задач (Rollover)
+  function autoRolloverPastTasks() {
+    const todayStr = toISODate(new Date());
+    let changed = false;
+    tasks.forEach(t => {
+      if (!t.deleted && t.date && t.date < todayStr && !t.completed && t.rollover !== false) {
+        t.date = todayStr;
+        t.updatedAt = Date.now();
+        t.syncStatus = 'pending';
+        changed = true;
+      }
+    });
+    if (changed) saveTasks();
+  }
+
+  // --- CRUD ЗАДАЧ ---
+  function addTask(dateStr, timeStr, inputEl) {
+    const title = inputEl.value.trim();
+    if (!title) return;
+    tasks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      title,
+      date: dateStr,
+      time: timeStr || '',
+      notes: '',
+      color: 'transparent',
+      subtasks: [],
+      completed: false,
+      rollover: true,
+      deleted: false,
+      updatedAt: Date.now(),
+      syncStatus: 'pending'
+    });
+    inputEl.value = '';
+    saveTasks();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(x => x.id === id);
+    if (t) {
+      t.completed = !t.completed;
+      t.updatedAt = Date.now();
+      t.syncStatus = 'pending';
+      saveTasks();
+    }
+  }
+
+  function moveTaskTomorrow(id) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    if (!t.date) {
+      t.date = toISODate(new Date());
+    } else {
+      const [y, m, d] = t.date.split('-').map(Number);
+      t.date = toISODate(new Date(y, m - 1, d + 1));
+    }
+    t.updatedAt = Date.now();
+    t.syncStatus = 'pending';
+    saveTasks();
+  }
+
+  // --- МОДАЛКА ДЕТАЛЕЙ ЗАДАЧИ ---
+  function openTaskModal(id) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    editingTaskId = id;
+    editingColor = t.color || 'transparent';
+    document.getElementById('editTitle').value = t.title;
+    document.getElementById('editDate').value = t.date || '';
+    document.getElementById('editTime').value = t.time || '';
+    document.getElementById('editNotes').value = t.notes || '';
+    document.getElementById('editRollover').checked = t.rollover !== false;
+    renderColorPicker();
+    renderSubtasks(t);
+    document.getElementById('taskModal').classList.add('open');
+  }
+
+  function renderColorPicker() {
+    const box = document.getElementById('colorPicker');
+    box.innerHTML = COLORS.map(c => `
+      <div class="color-Swatch ${editingColor === c ? 'selected' : ''}" 
+           style="background:${c === 'transparent' ? 'var(--surface-2)' : c}"
+           onclick="selectEditColor('${c}')"></div>
+    `).join('');
+  }
+
+  function selectEditColor(c) {
+    editingColor = c;
+    renderColorPicker();
+  }
+
+  function renderSubtasks(t) {
+    const list = t.subtasks || [];
+    const container = document.getElementById('subtasksList');
+    container.innerHTML = list.map((s, idx) => `
+      <div class="subtask-row">
+        <input type="checkbox" ${s.done ? 'checked' : ''} onchange="toggleSubtask(${idx})">
+        <span style="flex:1; font-size:14px; ${s.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${escapeHTML(s.text)}</span>
+        <button class="btn-mini" onclick="removeSubtask(${idx})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function addSubtaskFromInput() {
+    const input = document.getElementById('newSubtaskInput');
+    const text = input.value.trim();
+    if (!text || !editingTaskId) return;
+    const t = tasks.find(x => x.id === editingTaskId);
+    if (!t.subtasks) t.subtasks = [];
+    t.subtasks.push({ text, done: false });
+    input.value = '';
+    renderSubtasks(t);
+  }
+
+  function toggleSubtask(idx) {
+    const t = tasks.find(x => x.id === editingTaskId);
+    if (t && t.subtasks && t.subtasks[idx]) {
+      t.subtasks[idx].done = !t.subtasks[idx].done;
+      renderSubtasks(t);
+    }
+  }
+
+  function removeSubtask(idx) {
+    const t = tasks.find(x => x.id === editingTaskId);
+    if (t && t.subtasks) {
+      t.subtasks.splice(idx, 1);
+      renderSubtasks(t);
+    }
+  }
+
+  function setEditDateToSomeday() {
+    document.getElementById('editDate').value = '';
+    document.getElementById('editTime').value = '';
+  }
+
+  function closeTaskModal() {
+    if (editingTaskId) {
+      const t = tasks.find(x => x.id === editingTaskId);
+      if (t) {
+        const newTitle = document.getElementById('editTitle').value.trim();
+        if (newTitle) t.title = newTitle;
+        t.date = document.getElementById('editDate').value || null;
+        t.time = document.getElementById('editTime').value || '';
+        t.notes = document.getElementById('editNotes').value;
+        t.color = editingColor;
+        t.rollover = document.getElementById('editRollover').checked;
+        t.updatedAt = Date.now();
+        t.syncStatus = 'pending';
+        saveTasks();
+      }
+    }
+    editingTaskId = null;
+    document.getElementById('taskModal').classList.remove('open');
+  }
+
+  function deleteActiveTask() {
+    if (!editingTaskId) return;
+    const t = tasks.find(x => x.id === editingTaskId);
+    if (t) {
+      t.deleted = true;
+      t.updatedAt = Date.now();
+      t.syncStatus = 'pending';
+      saveTasks();
+    }
+    editingTaskId = null;
+    document.getElementById('taskModal').classList.remove('open');
+  }
+
+  // --- НАВИГАЦИЯ И ТЕМА ---
+  function setView(v) {
+    currentView = v;
+    document.getElementById('btnWeek').classList.toggle('active', v === 'week');
+    document.getElementById('btnMonth').classList.toggle('active', v === 'month');
+    document.getElementById('btnDay').classList.toggle('active', v === 'day');
+    render();
+  }
+
+  function shiftPeriod(dir) {
+    if (currentView === 'week') anchorDate.setDate(anchorDate.getDate() + dir * 7);
+    else if (currentView === 'month') anchorDate.setMonth(anchorDate.getMonth() + dir);
+    else {
+      anchorDate.setDate(anchorDate.getDate() + dir);
+      selectedDateStr = toISODate(anchorDate);
+    }
+    render();
+  }
+
+  function goToday() {
+    anchorDate = new Date();
+    selectedDateStr = toISODate(anchorDate);
+    render();
+  }
+
+  function toggleTheme() {
+    config.theme = config.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', config.theme);
+    saveConfig();
+  }
+
+  function toggleSearch() {
+    const sb = document.getElementById('searchInput');
+    sb.classList.toggle('open');
+    if (sb.classList.contains('open')) sb.focus();
+    else { sb.value = ''; render(); }
+  }
+
+  // --- ОТРИСОВКА ---
+  function getActiveTasks() {
+    const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    return tasks.filter(t => {
+      if (t.deleted) return false;
+      if (!q) return true;
+      return t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q);
+    }).sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+  }
+
+  function renderTaskItem(t) {
+    const subCount = (t.subtasks || []).length;
+    const subDone = (t.subtasks || []).filter(s => s.done).length;
+    return `
+      <li class="task-item ${t.completed ? 'done' : ''}">
+        <div class="checkbox" onclick="toggleTask('${t.id}')">${t.completed ? '✓' : ''}</div>
+        ${t.color && t.color !== 'transparent' ? `<div class="color-pill-indicator" style="background:${t.color}"></div>` : ''}
+        <div class="task-body" onclick="openTaskModal('${t.id}')">
+          <span class="task-text">${escapeHTML(t.title)}</span>
+          <div class="task-meta">
+            ${t.time ? `<span>⏰ ${t.time}</span>` : ''}
+            ${subCount ? `<span>☑ ${subDone}/${subCount}</span>` : ''}
+            ${t.notes ? `<span>📝</span>` : ''}
+          </div>
+        </div>
+        <button class="btn-mini" title="На +1 день" onclick="moveTaskTomorrow('${t.id}')">→</button>
+      </li>
+    `;
+  }
+
+  function render() {
+    const todayStr = toISODate(new Date());
+    const visibleTasks = getActiveTasks();
+    document.getElementById('headerTitle').textContent = 
+      `${MONTHS_RU[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
+
+    const main = document.getElementById('mainView');
+
+    if (currentView === 'week') {
+      const d = new Date(anchorDate);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(d.setDate(diff));
+
+      let html = '';
+      for (let i = 0; i < 7; i++) {
+        const cur = new Date(monday);
+        cur.setDate(monday.getDate() + i);
+        const dateStr = toISODate(cur);
+        const dayTasks = visibleTasks.filter(t => t.date === dateStr);
+        const isToday = dateStr === todayStr;
+
+        html += `
+          <div class="day-block">
+            <div class="day-header">
+              <span class="day-name ${isToday ? 'is-today' : ''}" onclick="openDayTimeline('${dateStr}')" style="cursor:pointer">
+                ${DAYS_RU[cur.getDay()]}
+              </span>
+              <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
+            </div>
+            <ul class="task-list">${dayTasks.map(renderTaskItem).join('')}</ul>
+            <input type="text" class="add-input" placeholder="+ Добавить задачу..." 
+                   onkeydown="if(event.key==='Enter') addTask('${dateStr}', null, this)">
+          </div>
+        `;
+      }
+      main.innerHTML = html;
+
+    } else if (currentView === 'month') {
+      const year = anchorDate.getFullYear();
+      const month = anchorDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const startOffset = (firstDay.getDay() + 6) % 7;
+      const startDate = new Date(year, month, 1 - startOffset);
+
+      let gridHtml = `<div class="month-grid">`;
+      SHORT_DAYS_RU.forEach(label => gridHtml += `<div class="weekday-label">${label}</div>`);
+
+      for (let i = 0; i < 42; i++) {
+        const cur = new Date(startDate);
+        cur.setDate(startDate.getDate() + i);
+        const dateStr = toISODate(cur);
+        const inMonth = cur.getMonth() === month;
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === selectedDateStr;
+        const dayTasks = visibleTasks.filter(t => t.date === dateStr);
+
+        gridHtml += `
+          <div class="month-cell ${inMonth ? '' : 'other-month'} ${isSelected ? 'selected' : ''}" 
+               onclick="selectMonthDay('${dateStr}')">
+            <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
+            ${dayTasks.slice(0, 3).map(t => `
+              <div class="cell-pill ${t.completed ? 'done' : ''}" style="border-left-color:${t.color || 'transparent'}">
+                ${t.time ? t.time + ' ' : ''}${escapeHTML(t.title)}
+              </div>`).join('')}
+            ${dayTasks.length > 3 ? `<div class="cell-pill">+${dayTasks.length - 3}</div>` : ''}
+          </div>
+        `;
+      }
+      gridHtml += `</div>`;
+
+      const selTasks = visibleTasks.filter(t => t.date === selectedDateStr);
+      gridHtml += `
+        <div class="day-block">
+          <div class="day-header">
+            <span class="day-name">Выбран день: ${selectedDateStr}</span>
+            <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">Открыть по часам →</button>
+          </div>
+          <ul class="task-list">${selTasks.map(renderTaskItem).join('')}</ul>
+          <input type="text" class="add-input" placeholder="+ Добавить на ${selectedDateStr}..." 
+                 onkeydown="if(event.key==='Enter') addTask('${selectedDateStr}', null, this)">
+        </div>
+      `;
+      main.innerHTML = gridHtml;
+
+    } else if (currentView === 'day') {
+      const dateStr = toISODate(anchorDate);
+      const dayTasks = visibleTasks.filter(t => t.date === dateStr);
+      const untimed = dayTasks.filter(t => !t.time);
+
+      let html = `
+        <div class="day-block">
+          <div class="day-header">
+            <span class="day-name">${DAYS_RU[anchorDate.getDay()]}, ${dateStr}</span>
+            <span class="day-date">Весь день</span>
+          </div>
+          <ul class="task-list">${untimed.map(renderTaskItem).join('')}</ul>
+          <input type="text" class="add-input" placeholder="+ Задача без точного часа..." 
+                 onkeydown="if(event.key==='Enter') addTask('${dateStr}', null, this)">
+        </div>
+      `;
+
+      for (let h = 7; h <= 22; h++) {
+        const prefix = ('0' + h).slice(-2);
+        const slotTasks = dayTasks.filter(t => (t.time || '').startsWith(prefix + ':'));
+        html += `
+          <div class="timeline-row">
+            <div class="timeline-hour">${prefix}:00</div>
+            <div class="timeline-slot">
+              <ul class="task-list">${slotTasks.map(renderTaskItem).join('')}</ul>
+              <input type="text" class="add-input" placeholder="+" style="padding:2px 0; font-size:13px;"
+                     onkeydown="if(event.key==='Enter') addTask('${dateStr}', '${prefix}:00', this)">
+            </div>
+          </div>
+        `;
+      }
+      main.innerHTML = html;
+    }
+
+    // Someday
+    const somedayTasks = visibleTasks.filter(t => !t.date);
+    document.getElementById('somedayList').innerHTML = somedayTasks.map(renderTaskItem).join('');
+    updateSyncIndicator();
+  }
+
+  function selectMonthDay(dateStr) {
+    selectedDateStr = dateStr;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    anchorDate = new Date(y, m - 1, d);
+    render();
+  }
+
+  function openDayTimeline(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    anchorDate = new Date(y, m - 1, d);
+    selectedDateStr = dateStr;
+    setView('day');
+  }
+
+  // --- СИНХРОНИЗАЦИЯ (SUPABASE REST) И БЭКАП ---
+  function updateSyncIndicator(state) {
+    const dot = document.getElementById('syncDot');
+    const hasPending = tasks.some(t => t.syncStatus === 'pending');
+    dot.className = 'sync-dot ' + (state === 'error' ? 'error' : (hasPending ? 'pending' : 'synced'));
+  }
+
+  function openSyncModal() {
+    document.getElementById('sbUrl').value = config.sbUrl || '';
+    document.getElementById('sbKey').value = config.sbKey || '';
+    document.getElementById('syncModal').classList.add('open');
+  }
+
+  function closeSyncModal() {
+    document.getElementById('syncModal').classList.remove('open');
+  }
+
+  function saveSyncConfig() {
+    config.sbUrl = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
+    config.sbKey = document.getElementById('sbKey').value.trim();
+    saveConfig();
+    syncNow();
+    closeSyncModal();
+  }
+
+  async function syncNow() {
+    if (!config.sbUrl || !config.sbKey || !navigator.onLine) return;
+    const headers = {
+      'apikey': config.sbKey,
+      'Authorization': 'Bearer ' + config.sbKey,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    };
+    try {
+      const pending = tasks.filter(t => t.syncStatus === 'pending');
+      if (pending.length > 0) {
+        const payload = pending.map(t => ({ id: t.id, updated_at: t.updatedAt, payload: t }));
+        const resPush = await fetch(`${config.sbUrl}/rest/v1/tasks`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload)
+        });
+        if (!resPush.ok) throw new Error('Push error');
+        pending.forEach(t => t.syncStatus = 'synced');
+      }
+
+      const resPull = await fetch(`${config.sbUrl}/rest/v1/tasks?select=*`, { headers });
+      if (resPull.ok) {
+        const remoteRows = await resPull.json();
+        remoteRows.forEach(row => {
+          const remoteTask = row.payload;
+          if (!remoteTask || !remoteTask.id) return;
+          const localIdx = tasks.findIndex(x => x.id === remoteTask.id);
+          if (localIdx === -1) {
+            remoteTask.syncStatus = 'synced';
+            tasks.push(remoteTask);
+          } else if (row.updated_at > (tasks[localIdx].updatedAt || 0)) {
+            remoteTask.syncStatus = 'synced';
+            tasks[localIdx] = remoteTask;
+          }
+        });
+        saveTasks(false);
+      }
+      updateSyncIndicator('synced');
+    } catch (e) {
+      updateSyncIndicator('error');
+    }
+  }
+
+  window.addEventListener('online', syncNow);
+
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `tweekcal-backup-${toISODate(new Date())}.json`;
+    a.click();
+  }
+
+  function importJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (Array.isArray(imported)) {
+          tasks = imported;
+          saveTasks();
+          closeSyncModal();
+        }
+      } catch (err) { alert('Ошибка чтения JSON файла'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function escapeHTML(str) {
+    return String(str || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  }
+
+  autoRolloverPastTasks();
+  render();
+  syncNow();
+</script>
+</body>
+</html>
