@@ -8,7 +8,6 @@
   <meta name="apple-mobile-web-app-title" content="TweekCal">
   <title>TweekCal Pro</title>
 
-  <!-- Иконка для домашнего экрана iOS -->
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231c1c1e'/><rect x='28' y='36' width='124' height='22' rx='6' fill='%23ff3b30'/><circle cx='46' cy='88' r='8' fill='%2334c759'/><rect x='66' y='82' width='80' height='12' rx='6' fill='%23ffffff'/><circle cx='46' cy='126' r='8' fill='%23007aff'/><rect x='66' y='120' width='56' height='12' rx='6' fill='%238e8e93'/></svg>">
   <link rel="manifest" href='data:application/manifest+json,{"name":"TweekCal Pro","short_name":"TweekCal","start_url":".","display":"standalone","background_color":"#fdfdfd","theme_color":"#1c1c1e"}'>
 
@@ -67,11 +66,7 @@
       margin-bottom: 8px;
     }
 
-    .nav-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .nav-group { display: flex; align-items: center; gap: 6px; }
 
     .title-month {
       font-size: 17px;
@@ -118,8 +113,10 @@
     }
 
     .day-block {
-      padding: 14px 0 8px 0;
+      padding: 14px 4px 8px 4px;
       border-bottom: 2px solid var(--line);
+      border-radius: 8px;
+      transition: background-color 0.15s, outline 0.15s;
     }
 
     .day-header {
@@ -133,7 +130,7 @@
     .day-name.is-today { color: var(--today); }
     .day-date { font-size: 13px; color: var(--muted); }
 
-    .task-list { list-style: none; padding: 0; margin: 0; }
+    .task-list { list-style: none; padding: 0; margin: 0; min-height: 4px; }
 
     .task-item {
       display: flex;
@@ -143,11 +140,18 @@
       border-bottom: 1px solid var(--border);
       font-size: 15px;
       border-radius: 6px;
+      background: var(--bg);
+      transition: opacity 0.15s;
     }
 
     .task-item.done .task-text {
       text-decoration: line-through;
       color: var(--muted);
+    }
+
+    .task-item.dragging-source {
+      opacity: 0.25;
+      background: var(--surface-2);
     }
 
     .checkbox {
@@ -193,6 +197,47 @@
       color: var(--muted);
       background: var(--surface-2);
       border: none;
+    }
+
+    /* Ручка для перетаскивания пальцем */
+    .drag-handle {
+      padding: 6px 8px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      opacity: 0.65;
+    }
+
+    /* Призрак перетаскиваемой карточки */
+    .drag-ghost {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      background: var(--surface);
+      color: var(--text);
+      border: 1.5px solid var(--today);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 85vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transform: scale(1.03);
+    }
+
+    /* Подсветка зоны, куда упадет задача */
+    .drop-zone-active {
+      outline: 2px dashed var(--today) !important;
+      background-color: rgba(255, 59, 48, 0.06) !important;
     }
 
     .add-input {
@@ -262,7 +307,7 @@
     }
     .cell-pill.done { opacity: 0.4; text-decoration: line-through; }
 
-    .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 48px; }
+    .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 48px; border-radius: 6px; }
     .timeline-hour { width: 52px; font-size: 12px; color: var(--muted); padding-top: 6px; flex-shrink: 0; }
     .timeline-slot { flex-grow: 1; padding: 4px 0; }
 
@@ -271,6 +316,7 @@
       background: var(--surface-2);
       padding: 14px;
       border-radius: 12px;
+      transition: outline 0.15s, background-color 0.15s;
     }
 
     .modal-backdrop {
@@ -351,14 +397,15 @@
 <div class="container">
   <div id="mainView"></div>
 
-  <div class="someday-box" id="somedayContainer">
+  <div class="someday-box" id="somedayContainer" data-drop-date="__SOMEDAY__">
     <div class="day-header">
       <span class="day-name">Когда-нибудь (Someday)</span>
       <span class="day-date">Без даты</span>
     </div>
     <ul class="task-list" id="somedayList"></ul>
     <input type="text" class="add-input" placeholder="+ Добавить задачу без даты..." 
-           onkeydown="if(event.key==='Enter') addTask(null, null, this)">
+           onkeydown="if(event.key==='Enter'){addTask(null, null, this); this.blur();}"
+           onblur="addTask(null, null, this)">
   </div>
 </div>
 
@@ -389,8 +436,9 @@
     <div class="form-row">
       <label class="form-label">Подзадачи (чеклист)</label>
       <div id="subtasksList"></div>
-      <input type="text" id="newSubtaskInput" class="add-input" placeholder="+ Добавить подзадачу и нажать Enter..."
-             onkeydown="if(event.key==='Enter') addSubtaskFromInput()">
+      <input type="text" id="newSubtaskInput" class="add-input" placeholder="+ Добавить подзадачу..."
+             onkeydown="if(event.key==='Enter'){addSubtaskFromInput(); this.blur();}"
+             onblur="addSubtaskFromInput()">
     </div>
     <div class="form-row">
       <label class="form-label">Заметка</label>
@@ -443,6 +491,11 @@
   let editingTaskId = null;
   let editingColor = 'transparent';
 
+  // Инициализация порядка сортировки для существующих задач
+  tasks.forEach((t, idx) => {
+    if (typeof t.order !== 'number') t.order = (idx + 1) * 1000;
+  });
+
   const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
   const DAYS_RU = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
   const SHORT_DAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
@@ -460,6 +513,12 @@
     render();
   }
 
+  function getNextOrderForDate(dateStr) {
+    const sameDay = tasks.filter(t => !t.deleted && (t.date || null) === (dateStr || null));
+    if (!sameDay.length) return 1000;
+    return Math.max(...sameDay.map(t => t.order || 0)) + 1000;
+  }
+
   function autoRolloverPastTasks() {
     const todayStr = toISODate(new Date());
     let changed = false;
@@ -474,8 +533,13 @@
   }
 
   function addTask(dateStr, timeStr, inputEl) {
+    if (!inputEl) return;
     const title = inputEl.value.trim();
-    if (!title) return;
+    if (!title) {
+      inputEl.value = '';
+      return;
+    }
+    inputEl.value = '';
     tasks.push({
       id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
       title,
@@ -487,9 +551,9 @@
       completed: false,
       rollover: true,
       deleted: false,
+      order: getNextOrderForDate(dateStr),
       updatedAt: Date.now()
     });
-    inputEl.value = '';
     saveTasks();
   }
 
@@ -511,6 +575,7 @@
       const [y, m, d] = t.date.split('-').map(Number);
       t.date = toISODate(new Date(y, m - 1, d + 1));
     }
+    t.order = getNextOrderForDate(t.date);
     t.updatedAt = Date.now();
     saveTasks();
   }
@@ -557,12 +622,16 @@
 
   function addSubtaskFromInput() {
     const input = document.getElementById('newSubtaskInput');
+    if (!input) return;
     const text = input.value.trim();
-    if (!text || !editingTaskId) return;
+    if (!text || !editingTaskId) {
+      input.value = '';
+      return;
+    }
+    input.value = '';
     const t = tasks.find(x => x.id === editingTaskId);
     if (!t.subtasks) t.subtasks = [];
     t.subtasks.push({ text, done: false });
-    input.value = '';
     renderSubtasks(t);
   }
 
@@ -585,6 +654,7 @@
   }
 
   function closeTaskModal() {
+    addSubtaskFromInput();
     if (editingTaskId) {
       const t = tasks.find(x => x.id === editingTaskId);
       if (t) {
@@ -678,14 +748,23 @@
       if (t.deleted) return false;
       if (!q) return true;
       return t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q);
-    }).sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+    }).sort((a, b) => {
+      const ta = a.time || '';
+      const tb = b.time || '';
+      if (ta !== tb) {
+        if (!ta) return 1;
+        if (!tb) return -1;
+        return ta.localeCompare(tb);
+      }
+      return (a.order || 0) - (b.order || 0);
+    });
   }
 
   function renderTaskItem(t) {
     const subCount = (t.subtasks || []).length;
     const subDone = (t.subtasks || []).filter(s => s.done).length;
     return `
-      <li class="task-item ${t.completed ? 'done' : ''}">
+      <li class="task-item ${t.completed ? 'done' : ''}" data-task-id="${t.id}">
         <div class="checkbox" onclick="toggleTask('${t.id}')">${t.completed ? '✓' : ''}</div>
         ${t.color && t.color !== 'transparent' ? `<div class="color-pill-indicator" style="background:${t.color}"></div>` : ''}
         <div class="task-body" onclick="openTaskModal('${t.id}')">
@@ -697,6 +776,7 @@
           </div>
         </div>
         <button class="btn-mini" title="На +1 день" onclick="moveTaskTomorrow('${t.id}')">→</button>
+        <div class="drag-handle" data-drag-id="${t.id}" title="Зажмите и перетащите">⋮⋮</div>
       </li>
     `;
   }
@@ -724,7 +804,7 @@
         const isToday = dateStr === todayStr;
 
         html += `
-          <div class="day-block">
+          <div class="day-block" data-drop-date="${dateStr}">
             <div class="day-header">
               <span class="day-name ${isToday ? 'is-today' : ''}" onclick="openDayTimeline('${dateStr}')" style="cursor:pointer">
                 ${DAYS_RU[cur.getDay()]}
@@ -733,7 +813,8 @@
             </div>
             <ul class="task-list">${dayTasks.map(renderTaskItem).join('')}</ul>
             <input type="text" class="add-input" placeholder="+ Добавить задачу..." 
-                   onkeydown="if(event.key==='Enter') addTask('${dateStr}', null, this)">
+                   onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
+                   onblur="addTask('${dateStr}', null, this)">
           </div>
         `;
       }
@@ -760,6 +841,7 @@
 
         gridHtml += `
           <div class="month-cell ${inMonth ? '' : 'other-month'} ${isSelected ? 'selected' : ''}" 
+               data-drop-date="${dateStr}"
                onclick="selectMonthDay('${dateStr}')">
             <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
             ${dayTasks.slice(0, 3).map(t => `
@@ -774,14 +856,15 @@
 
       const selTasks = visibleTasks.filter(t => t.date === selectedDateStr);
       gridHtml += `
-        <div class="day-block">
+        <div class="day-block" data-drop-date="${selectedDateStr}">
           <div class="day-header">
             <span class="day-name">Выбран день: ${selectedDateStr}</span>
             <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
           </div>
           <ul class="task-list">${selTasks.map(renderTaskItem).join('')}</ul>
           <input type="text" class="add-input" placeholder="+ Добавить на ${selectedDateStr}..." 
-                 onkeydown="if(event.key==='Enter') addTask('${selectedDateStr}', null, this)">
+                 onkeydown="if(event.key==='Enter'){addTask('${selectedDateStr}', null, this); this.blur();}"
+                 onblur="addTask('${selectedDateStr}', null, this)">
         </div>
       `;
       main.innerHTML = gridHtml;
@@ -792,14 +875,15 @@
       const untimed = dayTasks.filter(t => !t.time);
 
       let html = `
-        <div class="day-block">
+        <div class="day-block" data-drop-date="${dateStr}" data-drop-time="__CLEAR__">
           <div class="day-header">
             <span class="day-name">${DAYS_RU[anchorDate.getDay()]}, ${dateStr}</span>
             <span class="day-date">Весь день</span>
           </div>
           <ul class="task-list">${untimed.map(renderTaskItem).join('')}</ul>
           <input type="text" class="add-input" placeholder="+ Задача без точного часа..." 
-                 onkeydown="if(event.key==='Enter') addTask('${dateStr}', null, this)">
+                 onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
+                 onblur="addTask('${dateStr}', null, this)">
         </div>
       `;
 
@@ -807,12 +891,13 @@
         const prefix = ('0' + h).slice(-2);
         const slotTasks = dayTasks.filter(t => (t.time || '').startsWith(prefix + ':'));
         html += `
-          <div class="timeline-row">
+          <div class="timeline-row" data-drop-date="${dateStr}" data-drop-time="${prefix}:00">
             <div class="timeline-hour">${prefix}:00</div>
             <div class="timeline-slot">
               <ul class="task-list">${slotTasks.map(renderTaskItem).join('')}</ul>
               <input type="text" class="add-input" placeholder="+" style="padding:2px 0; font-size:13px;"
-                     onkeydown="if(event.key==='Enter') addTask('${dateStr}', '${prefix}:00', this)">
+                     onkeydown="if(event.key==='Enter'){addTask('${dateStr}', '${prefix}:00', this); this.blur();}"
+                     onblur="addTask('${dateStr}', '${prefix}:00', this)">
             </div>
           </div>
         `;
@@ -841,6 +926,157 @@
   function escapeHTML(str) {
     return String(str || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
+
+  // --- СЕНСОРНЫЙ ДВИЖОК ПЕРЕТАСКИВАНИЯ (DRAG AND DROP) ---
+  let dragState = null;
+
+  function initDragStart(taskId, clientX, clientY, sourceRow) {
+    const task = tasks.find(x => x.id === taskId);
+    if (!task) return;
+
+    const ghost = document.createElement('div');
+    ghost.className = 'drag-ghost';
+    ghost.textContent = task.title;
+    document.body.appendChild(ghost);
+
+    if (sourceRow) sourceRow.classList.add('dragging-source');
+
+    dragState = {
+      taskId,
+      ghost,
+      sourceRow,
+      activeZone: null,
+      clientX,
+      clientY,
+      scrollTimer: setInterval(handleDragAutoScroll, 25)
+    };
+    updateGhostPos(clientX, clientY);
+  }
+
+  function updateGhostPos(x, y) {
+    if (!dragState) return;
+    dragState.clientX = x;
+    dragState.clientY = y;
+    dragState.ghost.style.left = Math.max(12, Math.min(window.innerWidth - 220, x - 110)) + 'px';
+    dragState.ghost.style.top = (y - 34) + 'px';
+
+    const elUnder = document.elementFromPoint(x, y);
+    const zone = elUnder ? elUnder.closest('[data-drop-date]') : null;
+
+    if (dragState.activeZone && dragState.activeZone !== zone) {
+      dragState.activeZone.classList.remove('drop-zone-active');
+    }
+    if (zone) {
+      zone.classList.add('drop-zone-active');
+    }
+    dragState.activeZone = zone;
+  }
+
+  function handleDragAutoScroll() {
+    if (!dragState) return;
+    const y = dragState.clientY;
+    const edge = 75;
+    if (y < edge) window.scrollBy(0, -10);
+    else if (y > window.innerHeight - edge) window.scrollBy(0, 10);
+  }
+
+  function finishDrag(x, y) {
+    if (!dragState) return;
+    clearInterval(dragState.scrollTimer);
+
+    const elUnder = document.elementFromPoint(x, y);
+    const zone = elUnder ? elUnder.closest('[data-drop-date]') : dragState.activeZone;
+    const overTaskRow = elUnder ? elUnder.closest('.task-item[data-task-id]') : null;
+
+    if (dragState.activeZone) dragState.activeZone.classList.remove('drop-zone-active');
+    if (dragState.sourceRow) dragState.sourceRow.classList.remove('dragging-source');
+    dragState.ghost.remove();
+
+    const task = tasks.find(t => t.id === dragState.taskId);
+    if (task && zone) {
+      const rawDate = zone.getAttribute('data-drop-date');
+      const rawTime = zone.getAttribute('data-drop-time');
+      const targetDate = rawDate === '__SOMEDAY__' ? null : rawDate;
+
+      task.date = targetDate;
+      if (rawTime === '__CLEAR__') task.time = '';
+      else if (rawTime) task.time = rawTime;
+
+      // Сортировка внутри целевого дня при наведении на конкретную задачу
+      const overId = overTaskRow ? overTaskRow.getAttribute('data-task-id') : null;
+      if (overId && overId !== task.id) {
+        const siblings = getActiveTasks().filter(t => t.id !== task.id && (t.date || null) === targetDate);
+        const targetIdx = siblings.findIndex(t => t.id === overId);
+        const rect = overTaskRow.getBoundingClientRect();
+        const insertAfter = y > (rect.top + rect.height / 2);
+
+        if (targetIdx !== -1) {
+          const insertPos = insertAfter ? targetIdx + 1 : targetIdx;
+          siblings.splice(insertPos, 0, task);
+          siblings.forEach((item, i) => { item.order = (i + 1) * 1000; });
+        } else {
+          task.order = getNextOrderForDate(targetDate);
+        }
+      } else {
+        task.order = getNextOrderForDate(targetDate);
+      }
+
+      task.updatedAt = Date.now();
+      saveTasks();
+    }
+
+    dragState = null;
+  }
+
+  // События Touch (iPhone / iPad)
+  document.addEventListener('touchstart', e => {
+    const handle = e.target.closest('.drag-handle');
+    if (handle) {
+      e.preventDefault();
+      const t = e.touches[0];
+      initDragStart(handle.getAttribute('data-drag-id'), t.clientX, t.clientY, handle.closest('.task-item'));
+      return;
+    }
+
+    // Скрытие клавиатуры и автосохранение при касании вне поля ввода
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+      if (!e.target.closest('input, textarea, button')) {
+        active.blur();
+      }
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragState) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    updateGhostPos(t.clientX, t.clientY);
+  }, { passive: false });
+
+  document.addEventListener('touchend', e => {
+    if (!dragState) return;
+    const t = e.changedTouches[0];
+    finishDrag(t.clientX, t.clientY);
+  });
+
+  // События мыши (для удобства проверки на ПК)
+  document.addEventListener('mousedown', e => {
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    e.preventDefault();
+    initDragStart(handle.getAttribute('data-drag-id'), e.clientX, e.clientY, handle.closest('.task-item'));
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragState) return;
+    updateGhostPos(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (!dragState) return;
+    finishDrag(e.clientX, e.clientY);
+  });
 
   autoRolloverPastTasks();
   render();
