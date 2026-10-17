@@ -43,13 +43,12 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Жесткий каркас экрана без сдвига верхней и нижней панелей */
+    /* Жесткая привязка к краям экрана iPhone без лишнего зазора снизу */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      height: 100dvh;
       overflow: hidden;
       background-color: var(--bg);
       color: var(--text);
@@ -59,6 +58,8 @@
     }
 
     .app-shell {
+      position: fixed;
+      inset: 0;
       display: flex;
       flex-direction: column;
       width: 100%;
@@ -69,7 +70,7 @@
     /* ВЕРХНЯЯ ПАНЕЛЬ */
     .top-bar {
       flex-shrink: 0;
-      padding: calc(8px + env(safe-area-inset-top)) 12px 10px 12px;
+      padding: calc(6px + env(safe-area-inset-top)) 12px 8px 12px;
       background: var(--bg);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -98,8 +99,8 @@
       background: var(--surface-2);
       border: none;
       border-radius: 8px;
-      height: 32px;
-      min-width: 32px;
+      height: 30px;
+      min-width: 30px;
       padding: 0 8px;
       display: inline-flex;
       align-items: center;
@@ -111,9 +112,7 @@
       flex-shrink: 0;
     }
 
-    .icon-btn:active {
-      opacity: 0.7;
-    }
+    .icon-btn:active { opacity: 0.7; }
 
     .period-info {
       display: flex;
@@ -132,11 +131,11 @@
     }
 
     .week-range-badge {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--muted);
       background: var(--surface-2);
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 6px;
       white-space: nowrap;
       flex-shrink: 0;
@@ -152,7 +151,7 @@
     .btn-today {
       font-size: 13px;
       padding: 0 10px;
-      height: 32px;
+      height: 30px;
       border-radius: 8px;
       background: var(--surface-2);
       border: none;
@@ -161,18 +160,16 @@
       cursor: pointer;
     }
 
-    /* Полоса поиска под шапкой */
+    /* Полоса поиска (появляется в режиме Все задачи / Поиск) */
     .search-wrap {
       flex-shrink: 0;
-      padding: 0 12px;
+      padding: 8px 12px;
       background: var(--bg);
       display: none;
       border-bottom: 1px solid var(--border);
     }
-    .search-wrap.open {
-      display: block;
-      padding-bottom: 8px;
-    }
+    .search-wrap.open { display: block; }
+
     .search-bar {
       width: 100%;
       background: var(--surface-2);
@@ -190,16 +187,16 @@
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding: 8px 14px 32px 14px;
+      padding: 6px 14px 20px 14px;
       width: 100%;
       max-width: 650px;
       margin: 0 auto;
     }
 
-    /* НИЖНЯЯ ПАНЕЛЬ */
+    /* НИЖНЯЯ ПАНЕЛЬ — Опущена максимально низко */
     .bottom-bar {
       flex-shrink: 0;
-      padding: 8px 16px calc(10px + env(safe-area-inset-bottom)) 16px;
+      padding: 5px 16px calc(2px + env(safe-area-inset-bottom, 0px)) 16px;
       background: var(--bg);
       border-top: 1px solid var(--border);
       display: flex;
@@ -213,17 +210,17 @@
     .view-switcher {
       display: flex;
       background: var(--surface-2);
-      padding: 3px;
-      border-radius: 12px;
+      padding: 2px;
+      border-radius: 10px;
       gap: 2px;
     }
 
     .view-btn {
-      width: 44px;
-      height: 34px;
+      width: 42px;
+      height: 30px;
       border: none;
       background: transparent;
-      border-radius: 9px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -235,12 +232,12 @@
     .view-btn.active {
       background: var(--surface);
       color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     }
 
     .view-btn svg {
-      width: 18px;
-      height: 18px;
+      width: 17px;
+      height: 17px;
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
@@ -250,9 +247,9 @@
 
     .search-trigger-btn {
       position: absolute;
-      right: 16px;
-      width: 38px;
-      height: 38px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: var(--surface-2);
       border: none;
@@ -270,8 +267,8 @@
     }
 
     .search-trigger-btn svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
@@ -319,7 +316,6 @@
       color: var(--muted);
     }
 
-    /* Стиль задачи, которая сейчас находится под пальцем в списке */
     .task-item.dragging-placeholder {
       opacity: 0.25;
       background: var(--surface-2);
@@ -371,6 +367,24 @@
       margin-top: 2px;
     }
 
+    /* Плашка даты/времени в режиме "Все задачи", меняющаяся на дату создания при тапе */
+    .date-stamp-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--surface-2);
+      padding: 4px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .date-stamp-badge.showing-created {
+      color: var(--today);
+      background: rgba(255, 59, 48, 0.1);
+    }
+
     .drag-handle {
       padding: 6px 8px;
       color: var(--muted);
@@ -416,7 +430,7 @@
     }
     .add-input::placeholder { color: var(--muted); opacity: 0.55; }
 
-    /* СЕТКА МЕСЯЦА (Фиксированная ширина колонок без растяжения) */
+    /* СЕТКА МЕСЯЦА */
     .month-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -511,7 +525,7 @@
       width: 100%;
       max-width: 600px;
       border-radius: 18px 18px 0 0;
-      padding: 16px 16px calc(20px + env(safe-area-inset-bottom)) 16px;
+      padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) 16px;
       max-height: 86vh;
       overflow-y: auto;
     }
@@ -582,9 +596,9 @@
     </div>
   </header>
 
-  <!-- ПОЛОСА ПОИСКА -->
+  <!-- ПОЛОСА ПОИСКА (Активна в режиме "Все задачи") -->
   <div class="search-wrap" id="searchWrap">
-    <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по задачам и заметкам..." oninput="render()">
+    <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по всем задачам и заметкам..." oninput="render()">
   </div>
 
   <!-- ПРОКРУЧИВАЕМЫЙ КОНТЕНТ -->
@@ -606,7 +620,6 @@
   <!-- НИЖНЯЯ ПАНЕЛЬ -->
   <nav class="bottom-bar">
     <div class="view-switcher">
-      <!-- Месяц: квадрат на 4 части -->
       <button class="view-btn" id="btnMonth" onclick="setView('month')" title="Месяц">
         <svg viewBox="0 0 24 24">
           <rect x="3" y="3" width="18" height="18" rx="3"/>
@@ -614,14 +627,12 @@
           <line x1="12" y1="3" x2="12" y2="21"/>
         </svg>
       </button>
-      <!-- Неделя: квадрат пополам по горизонтали -->
       <button class="view-btn active" id="btnWeek" onclick="setView('week')" title="Неделя">
         <svg viewBox="0 0 24 24">
           <rect x="3" y="3" width="18" height="18" rx="3"/>
           <line x1="3" y1="12" x2="21" y2="12"/>
         </svg>
       </button>
-      <!-- День: цельный квадрат -->
       <button class="view-btn" id="btnDay" onclick="setView('day')" title="День">
         <svg viewBox="0 0 24 24">
           <rect x="3" y="3" width="18" height="18" rx="3"/>
@@ -629,8 +640,8 @@
       </button>
     </div>
 
-    <!-- Иконка поиска справа в углу -->
-    <button class="search-trigger-btn" id="btnSearch" onclick="toggleSearch()" title="Поиск">
+    <!-- Кнопка "Все задачи + Поиск" справа в углу -->
+    <button class="search-trigger-btn" id="btnSearch" onclick="toggleAllTasksView()" title="Все задачи и поиск">
       <svg viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="7"/>
         <line x1="20" y1="20" x2="16.2" y2="16.2"/>
@@ -679,14 +690,15 @@
         <input type="checkbox" id="editRollover"> Автоперенос на сегодня, если просрочено
       </label>
     </div>
-    <div style="display:flex; justify-content:space-between; margin-top:16px;">
+    <div id="editCreatedInfo" style="font-size:11px; color:var(--muted); margin-bottom:12px;"></div>
+    <div style="display:flex; justify-content:space-between; margin-top:8px;">
       <button class="btn-mini" onclick="setEditDateToSomeday()">В «Когда-нибудь»</button>
       <button class="btn-mini" onclick="deleteActiveTask()" style="color:#ff3b30;">Удалить</button>
     </div>
   </div>
 </div>
 
-<!-- ШТОРКА ФУНКЦИЙ (Тема, Повторы в зачатке, Бэкап) -->
+<!-- ШТОРКА ФУНКЦИЙ -->
 <div class="modal-backdrop" id="functionsModal" onclick="if(event.target===this) closeFunctionsModal()">
   <div class="sheet">
     <div class="sheet-header">
@@ -694,13 +706,16 @@
       <button class="btn-mini" onclick="closeFunctionsModal()">Закрыть</button>
     </div>
 
-    <!-- Оформление -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Темная тема</span>
-      <button class="btn-mini" onclick="toggleTheme()" id="themeToggleBtn">Переключить ◐</button>
+      <button class="btn-mini" onclick="toggleTheme()">Переключить ◐</button>
     </div>
 
-    <!-- Повторяющиеся задачи (в зачатке) -->
+    <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:15px; font-weight:500;">Список всех записей</span>
+      <button class="btn-mini" onclick="closeFunctionsModal(); setView('all');">Открыть список →</button>
+    </div>
+
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Повторяющиеся задачи (шаблоны)</label>
       <div id="recurringList" style="margin:6px 0;"></div>
@@ -715,7 +730,6 @@
       </div>
     </div>
 
-    <!-- Резервная копия -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Резервная копия (JSON)</label>
       <div style="display:flex; gap:8px; margin-top:8px;">
@@ -740,14 +754,17 @@
   let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","recurring":[]}');
   if (!Array.isArray(config.recurring)) config.recurring = [];
 
-  let currentView = 'week';
+  let currentView = 'week'; // 'week' | 'month' | 'day' | 'all'
+  let lastCalendarView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
   let editingTaskId = null;
   let editingColor = 'transparent';
+  let revealedCreatedIds = new Set(); // Хранит ID задач, у которых нажали на дату, чтобы показать дату создания
 
   tasks.forEach((t, idx) => {
     if (typeof t.order !== 'number') t.order = (idx + 1) * 1000;
+    if (!t.createdAt) t.createdAt = t.updatedAt || Date.now();
   });
 
   const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -759,6 +776,19 @@
   function toISODate(d) {
     const z = n => ('0' + n).slice(-2);
     return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+  }
+
+  function formatDateTimeStamp(ts) {
+    const d = new Date(Number(ts) || Date.now());
+    const z = n => ('0' + n).slice(-2);
+    return `${z(d.getDate())}.${z(d.getMonth()+1)}.${String(d.getFullYear()).slice(-2)} ${z(d.getHours())}:${z(d.getMinutes())}`;
+  }
+
+  function formatShortDate(dateStr, timeStr) {
+    if (!dateStr) return 'Когда-нибудь';
+    const parts = dateStr.split('-');
+    const shortD = `${parts[2]}.${parts[1]}`;
+    return timeStr ? `${shortD} ${timeStr}` : shortD;
   }
 
   function getMonday(d) {
@@ -780,7 +810,6 @@
     return Math.max(...sameDay.map(t => t.order || 0)) + 1000;
   }
 
-  // Автоперенос просроченных задач + генерация зачаточных повторов на сегодня
   function autoRolloverAndRecurring() {
     const now = new Date();
     const todayStr = toISODate(now);
@@ -802,8 +831,9 @@
         (rule.freq === 'monday' && dayOfWeek === 1);
 
       if (shouldSpawn && rule.lastSpawned !== todayStr) {
+        const nowTs = Date.now();
         tasks.push({
-          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+          id: crypto.randomUUID ? crypto.randomUUID() : String(nowTs + Math.random()),
           title: rule.title,
           date: todayStr,
           time: '',
@@ -814,7 +844,8 @@
           rollover: true,
           deleted: false,
           order: getNextOrderForDate(todayStr),
-          updatedAt: Date.now()
+          createdAt: nowTs,
+          updatedAt: nowTs
         });
         rule.lastSpawned = todayStr;
         changed = true;
@@ -832,8 +863,9 @@
     const title = inputEl.value.trim();
     if (!title) { inputEl.value = ''; return; }
     inputEl.value = '';
+    const nowTs = Date.now();
     tasks.push({
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      id: crypto.randomUUID ? crypto.randomUUID() : String(nowTs + Math.random()),
       title,
       date: dateStr,
       time: timeStr || '',
@@ -844,7 +876,8 @@
       rollover: true,
       deleted: false,
       order: getNextOrderForDate(dateStr),
-      updatedAt: Date.now()
+      createdAt: nowTs,
+      updatedAt: nowTs
     });
     saveTasks();
   }
@@ -858,6 +891,13 @@
     }
   }
 
+  function toggleCreatedStamp(id, event) {
+    event.stopPropagation();
+    if (revealedCreatedIds.has(id)) revealedCreatedIds.delete(id);
+    else revealedCreatedIds.add(id);
+    render();
+  }
+
   // --- МОДАЛКА ЗАДАЧИ ---
   function openTaskModal(id) {
     const t = tasks.find(x => x.id === id);
@@ -869,6 +909,7 @@
     document.getElementById('editTime').value = t.time || '';
     document.getElementById('editNotes').value = t.notes || '';
     document.getElementById('editRollover').checked = t.rollover !== false;
+    document.getElementById('editCreatedInfo').textContent = `Создано: ${formatDateTimeStamp(t.createdAt || t.updatedAt)}`;
     renderColorPicker();
     renderSubtasks(t);
     document.getElementById('taskModal').classList.add('open');
@@ -995,16 +1036,42 @@
     renderRecurringList();
   }
 
-  // --- НАВИГАЦИЯ И ВИДЫ ---
+  // --- НАВИГАЦИЯ И ПЕРЕКЛЮЧЕНИЕ ВИДОВ ---
   function setView(v) {
+    if (v !== 'all') lastCalendarView = v;
     currentView = v;
+
     document.getElementById('btnWeek').classList.toggle('active', v === 'week');
     document.getElementById('btnMonth').classList.toggle('active', v === 'month');
     document.getElementById('btnDay').classList.toggle('active', v === 'day');
+    document.getElementById('btnSearch').classList.toggle('active', v === 'all');
+
+    const wrap = document.getElementById('searchWrap');
+    const somedayBox = document.getElementById('somedayContainer');
+    const sb = document.getElementById('searchInput');
+
+    if (v === 'all') {
+      wrap.classList.add('open');
+      somedayBox.style.display = 'none';
+    } else {
+      wrap.classList.remove('open');
+      somedayBox.style.display = 'block';
+      sb.value = '';
+    }
     render();
   }
 
+  function toggleAllTasksView() {
+    if (currentView === 'all') {
+      setView(lastCalendarView || 'week');
+    } else {
+      setView('all');
+      setTimeout(() => document.getElementById('searchInput').focus(), 50);
+    }
+  }
+
   function shiftPeriod(dir) {
+    if (currentView === 'all') setView(lastCalendarView || 'week');
     if (currentView === 'week') anchorDate.setDate(anchorDate.getDate() + dir * 7);
     else if (currentView === 'month') anchorDate.setMonth(anchorDate.getMonth() + dir);
     else {
@@ -1015,6 +1082,7 @@
   }
 
   function goToday() {
+    if (currentView === 'all') setView(lastCalendarView || 'week');
     anchorDate = new Date();
     selectedDateStr = toISODate(anchorDate);
     render();
@@ -1024,16 +1092,6 @@
     config.theme = config.theme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', config.theme);
     saveConfig();
-  }
-
-  function toggleSearch() {
-    const wrap = document.getElementById('searchWrap');
-    const btn = document.getElementById('btnSearch');
-    const sb = document.getElementById('searchInput');
-    const isOpen = wrap.classList.toggle('open');
-    btn.classList.toggle('active', isOpen);
-    if (isOpen) sb.focus();
-    else { sb.value = ''; render(); }
   }
 
   function exportJSON() {
@@ -1076,16 +1134,26 @@
     });
   }
 
-  function renderTaskItem(t) {
+  function renderTaskItem(t, showDateBadge = false) {
     const subCount = (t.subtasks || []).length;
     const subDone = (t.subtasks || []).filter(s => s.done).length;
+    const isShowingCreated = revealedCreatedIds.has(t.id);
+
+    const badgeHtml = showDateBadge ? `
+      <span class="date-stamp-badge ${isShowingCreated ? 'showing-created' : ''}" 
+            onclick="toggleCreatedStamp('${t.id}', event)"
+            title="Нажмите, чтобы увидеть дату создания">
+        ${isShowingCreated ? 'Создано: ' + formatDateTimeStamp(t.createdAt || t.updatedAt) : formatShortDate(t.date, t.time)}
+      </span>
+    ` : '';
+
     return `
       <li class="task-item ${t.completed ? 'done' : ''}" data-task-id="${t.id}">
         <div class="checkbox" onclick="toggleTask('${t.id}')">${t.completed ? '✓' : ''}</div>
         ${t.color && t.color !== 'transparent' ? `<div class="color-pill-indicator" style="background:${t.color}"></div>` : ''}
         <div class="task-body" onclick="openTaskModal('${t.id}')">
           <span class="task-text">${escapeHTML(t.title)}</span>
-          ${(t.time || subCount || t.notes) ? `
+          ${(!showDateBadge && (t.time || subCount || t.notes)) ? `
             <div class="task-meta">
               ${t.time ? `<span>⏰ ${t.time}</span>` : ''}
               ${subCount ? `<span>☑ ${subDone}/${subCount}</span>` : ''}
@@ -1093,7 +1161,8 @@
             </div>
           ` : ''}
         </div>
-        <div class="drag-handle" data-drag-id="${t.id}">⋮⋮</div>
+        ${badgeHtml}
+        ${!showDateBadge ? `<div class="drag-handle" data-drag-id="${t.id}">⋮⋮</div>` : ''}
       </li>
     `;
   }
@@ -1102,15 +1171,39 @@
     const todayStr = toISODate(new Date());
     const visibleTasks = getActiveTasks();
 
-    // Шапка: Месяц и даты недели (первое и последнее число недели: 12–18)
     const monday = getMonday(anchorDate);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
 
-    document.getElementById('headerTitle').textContent = MONTHS_RU[anchorDate.getMonth()];
-    document.getElementById('weekRangeBadge').textContent = `${monday.getDate()}–${sunday.getDate()}`;
+    document.getElementById('headerTitle').textContent = 
+      currentView === 'all' ? 'Все задачи' : MONTHS_RU[anchorDate.getMonth()];
+    document.getElementById('weekRangeBadge').textContent = 
+      currentView === 'all' ? `${visibleTasks.length}` : `${monday.getDate()}–${sunday.getDate()}`;
 
     const main = document.getElementById('mainView');
+
+    if (currentView === 'all') {
+      // Полный список всех задач: нажатие на дату/время показывает дату создания записи
+      const sortedAll = [...visibleTasks].sort((a, b) => {
+        const da = a.date || '9999-99-99';
+        const db = b.date || '9999-99-99';
+        if (da !== db) return da.localeCompare(db);
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+
+      main.innerHTML = `
+        <div class="day-block" style="border-bottom:none;">
+          <div class="day-header">
+            <span class="day-name">Все записи</span>
+            <span class="day-date">Нажмите на дату справа → дата создания</span>
+          </div>
+          <ul class="task-list">
+            ${sortedAll.length ? sortedAll.map(t => renderTaskItem(t, true)).join('') : '<li style="padding:16px 0; color:var(--muted); font-size:14px;">Задач не найдено</li>'}
+          </ul>
+        </div>
+      `;
+      return;
+    }
 
     if (currentView === 'week') {
       let html = '';
@@ -1129,7 +1222,7 @@
               </span>
               <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
             </div>
-            <ul class="task-list" data-list-date="${dateStr}">${dayTasks.map(renderTaskItem).join('')}</ul>
+            <ul class="task-list" data-list-date="${dateStr}">${dayTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
             <input type="text" class="add-input" placeholder="+ Добавить задачу..." 
                    onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
                    onblur="addTask('${dateStr}', null, this)">
@@ -1179,7 +1272,7 @@
             <span class="day-name">Задачи на ${selectedDateStr}</span>
             <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
           </div>
-          <ul class="task-list" data-list-date="${selectedDateStr}">${selTasks.map(renderTaskItem).join('')}</ul>
+          <ul class="task-list" data-list-date="${selectedDateStr}">${selTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
           <input type="text" class="add-input" placeholder="+ Добавить на ${selectedDateStr}..." 
                  onkeydown="if(event.key==='Enter'){addTask('${selectedDateStr}', null, this); this.blur();}"
                  onblur="addTask('${selectedDateStr}', null, this)">
@@ -1198,7 +1291,7 @@
             <span class="day-name">${DAYS_RU[anchorDate.getDay()]}</span>
             <span class="day-date">${dateStr}</span>
           </div>
-          <ul class="task-list" data-list-date="${dateStr}">${untimed.map(renderTaskItem).join('')}</ul>
+          <ul class="task-list" data-list-date="${dateStr}">${untimed.map(t => renderTaskItem(t, false)).join('')}</ul>
           <input type="text" class="add-input" placeholder="+ Задача на весь день..." 
                  onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
                  onblur="addTask('${dateStr}', null, this)">
@@ -1212,7 +1305,7 @@
           <div class="timeline-row" data-drop-date="${dateStr}" data-drop-time="${prefix}:00">
             <div class="timeline-hour">${prefix}:00</div>
             <div class="timeline-slot">
-              <ul class="task-list" data-list-date="${dateStr}">${slotTasks.map(renderTaskItem).join('')}</ul>
+              <ul class="task-list" data-list-date="${dateStr}">${slotTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
               <input type="text" class="add-input" placeholder="+" style="padding:2px 0; font-size:13px;"
                      onkeydown="if(event.key==='Enter'){addTask('${dateStr}', '${prefix}:00', this); this.blur();}"
                      onblur="addTask('${dateStr}', '${prefix}:00', this)">
@@ -1224,7 +1317,7 @@
     }
 
     const somedayTasks = visibleTasks.filter(t => !t.date);
-    document.getElementById('somedayList').innerHTML = somedayTasks.map(renderTaskItem).join('');
+    document.getElementById('somedayList').innerHTML = somedayTasks.map(t => renderTaskItem(t, false)).join('');
   }
 
   function selectMonthDay(dateStr) {
@@ -1245,7 +1338,7 @@
     return String(str || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
 
-  // --- DRAG AND DROP С ЖИВЫМ СМЕЩЕНИЕМ ЭЛЕМЕНТОВ В РЕАЛЬНОМ ВРЕМЕНИ ---
+  // --- DRAG AND DROP С ЖИВЫМ СМЕЩЕНИЕМ ---
   let dragState = null;
 
   function initDragStart(taskId, clientX, clientY, sourceRow) {
@@ -1288,7 +1381,6 @@
     if (zone) zone.classList.add('drop-zone-active');
     dragState.activeZone = zone;
 
-    // Живое выталкивание и смещение соседних задач (как иконки на iOS)
     const targetList = zone ? zone.querySelector('.task-list') : null;
     const overRow = elUnder.closest('.task-item[data-task-id]');
 
@@ -1340,7 +1432,6 @@
       if (rawTime === '__CLEAR__') task.time = '';
       else if (rawTime) task.time = rawTime;
 
-      // Фиксируем новый порядок ровно так, как задачи встали в DOM после живого расталкивания
       if (parentList) {
         const domIds = Array.from(parentList.querySelectorAll('.task-item[data-task-id]'))
           .map(li => li.getAttribute('data-task-id'));
@@ -1359,7 +1450,6 @@
     saveTasks();
   }
 
-  // Обработка касаний на iPhone
   document.addEventListener('touchstart', e => {
     const handle = e.target.closest('.drag-handle');
     if (handle) {
@@ -1390,7 +1480,6 @@
     finishDrag(t.clientX, t.clientY);
   });
 
-  // Поддержка мыши для ПК
   document.addEventListener('mousedown', e => {
     const handle = e.target.closest('.drag-handle');
     if (!handle) return;
