@@ -18,11 +18,19 @@
       --surface-2: #f2f2f7;
       --text: #1c1c1e;
       --muted: #8e8e93;
-      --border: #e5e5ea;
+      --border: #ececef;
       --line: #1c1c1e;
       --accent: #1c1c1e;
       --accent-text: #ffffff;
       --today: #ff3b30;
+
+      /* Пастельная палитра хайлайтеров (Светлая тема) */
+      --hl-yellow: #fff3b0;
+      --hl-peach:  #ffd8be;
+      --hl-pink:   #ffc6d9;
+      --hl-lilac:  #e5d4ff;
+      --hl-blue:   #cde8ff;
+      --hl-mint:   #c6f6d5;
     }
 
     [data-theme="dark"] {
@@ -31,11 +39,19 @@
       --surface-2: #2c2c2e;
       --text: #f2f2f7;
       --muted: #8e8e93;
-      --border: #38383a;
+      --border: #2c2c2e;
       --line: #f2f2f7;
       --accent: #ffffff;
       --accent-text: #000000;
       --today: #ff453a;
+
+      /* Приглушенная пастельная палитра для Темной темы (читаемый светлый текст) */
+      --hl-yellow: #5c4d16;
+      --hl-peach:  #61371e;
+      --hl-pink:   #5e243a;
+      --hl-lilac:  #3f2b63;
+      --hl-blue:   #1e3f5e;
+      --hl-mint:   #1b4d32;
     }
 
     * {
@@ -43,7 +59,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Растягиваем холст на весь физический экран iPhone включая зону Home Indicator */
     html, body {
       margin: 0;
       padding: 0;
@@ -58,7 +73,7 @@
       -webkit-user-select: none;
     }
 
-    /* ВЕРХНЯЯ ПАНЕЛЬ (Прибита к верху) */
+    /* ВЕРХНЯЯ ПАНЕЛЬ */
     .top-bar {
       position: fixed;
       top: 0;
@@ -157,21 +172,23 @@
     .scroll-area {
       position: fixed;
       top: calc(45px + env(safe-area-inset-top, 0px));
-      bottom: 44px; /* Ровно под компактную нижнюю панель */
+      bottom: 44px;
       left: 0;
       right: 0;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding: 6px 14px 24px 14px;
+      padding: 6px 14px 28px 14px;
       max-width: 650px;
       margin: 0 auto;
     }
 
-    /* Полоса поиска внутри верхней части */
+    /* ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ (ЦВЕТА + СТАТУС) */
     .search-wrap {
-      padding: 4px 0 10px 0;
+      padding: 6px 0 12px 0;
       display: none;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
     }
     .search-wrap.open { display: block; }
 
@@ -179,14 +196,78 @@
       width: 100%;
       background: var(--surface-2);
       border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 10px;
+      padding: 9px 12px;
       font-size: 14px;
       color: var(--text);
       outline: none;
+      margin-bottom: 10px;
     }
 
-    /* НИЖНЯЯ ПАНЕЛЬ — Прижата вплотную к физическому низу экрана (БЕЗ safe-area-inset-bottom) */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .color-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+    .filter-swatch {
+      height: 24px;
+      min-width: 24px;
+      padding: 0 8px;
+      border-radius: 12px;
+      border: 1.5px solid transparent;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.12s;
+    }
+
+    .filter-swatch.active {
+      border-color: var(--text);
+      transform: scale(1.06);
+    }
+
+    .status-filter-bar {
+      display: flex;
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .status-chip {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .status-chip.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* НИЖНЯЯ ПАНЕЛЬ */
     .bottom-bar {
       position: fixed;
       left: 0;
@@ -271,7 +352,7 @@
 
     /* ДНИ И ЗАДАЧИ */
     .day-block {
-      padding: 12px 2px 6px 2px;
+      padding: 12px 2px 4px 2px;
       border-bottom: 2px solid var(--line);
       transition: background-color 0.15s;
     }
@@ -291,24 +372,26 @@
       list-style: none;
       padding: 0;
       margin: 0;
-      min-height: 6px;
+      min-height: 2px;
     }
 
     .task-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 4px;
+      gap: 8px;
+      padding: 6px 2px;
       border-bottom: 1px solid var(--border);
       font-size: 15px;
-      border-radius: 6px;
-      background: var(--bg);
+      background: transparent;
       transition: transform 0.18s ease, opacity 0.15s ease;
+    }
+
+    .task-item.done {
+      opacity: 0.48;
     }
 
     .task-item.done .task-text {
       text-decoration: line-through;
-      color: var(--muted);
     }
 
     .task-item.dragging-placeholder {
@@ -318,15 +401,15 @@
     }
 
     .checkbox {
-      width: 20px;
-      height: 20px;
-      border: 1.8px solid var(--muted);
+      width: 19px;
+      height: 19px;
+      border: 1.7px solid var(--muted);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-size: 12px;
+      font-size: 11px;
       cursor: pointer;
     }
 
@@ -336,22 +419,24 @@
       color: var(--accent-text);
     }
 
-    .color-pill-indicator {
-      width: 4px;
-      height: 18px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-
     .task-body {
       flex: 1;
       min-width: 0;
       cursor: pointer;
     }
 
+    /* Пастельное выделение текста задачи целиком (эффект маркера Tweek) */
     .task-text {
-      display: block;
+      display: inline-block;
       word-break: break-word;
+      padding: 2px 0;
+      border-radius: 6px;
+      line-height: 1.3;
+    }
+
+    .task-text.highlighted {
+      padding: 3px 9px;
+      font-weight: 500;
     }
 
     .task-meta {
@@ -359,7 +444,8 @@
       gap: 8px;
       font-size: 11px;
       color: var(--muted);
-      margin-top: 2px;
+      margin-top: 3px;
+      padding-left: 2px;
     }
 
     .date-stamp-badge {
@@ -380,13 +466,13 @@
     }
 
     .drag-handle {
-      padding: 6px 8px;
+      padding: 6px 6px;
       color: var(--muted);
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1;
       cursor: grab;
       touch-action: none;
-      opacity: 0.55;
+      opacity: 0.45;
       flex-shrink: 0;
     }
 
@@ -399,7 +485,7 @@
       border: 1.5px solid var(--today);
       box-shadow: 0 12px 28px rgba(0,0,0,0.22);
       border-radius: 10px;
-      padding: 9px 14px;
+      padding: 8px 14px;
       font-size: 15px;
       font-weight: 600;
       max-width: 80vw;
@@ -410,19 +496,21 @@
     }
 
     .drop-zone-active {
-      background-color: rgba(255, 59, 48, 0.05) !important;
+      background-color: rgba(255, 59, 48, 0.04) !important;
     }
 
+    /* Чистая пустая строка для ввода новой задачи (без текста "+ Добавить задачу") */
     .add-input {
       width: 100%;
       border: none;
-      padding: 8px 0 4px 0;
+      height: 32px;
+      padding: 4px 2px;
       font-size: 15px;
       background: transparent;
       outline: none;
       color: var(--text);
+      display: block;
     }
-    .add-input::placeholder { color: var(--muted); opacity: 0.55; }
 
     /* СЕТКА МЕСЯЦА */
     .month-grid {
@@ -449,7 +537,7 @@
 
     .month-cell {
       background: var(--surface);
-      min-height: 74px;
+      min-height: 76px;
       padding: 4px 3px;
       display: flex;
       flex-direction: column;
@@ -476,23 +564,23 @@
 
     .cell-pill {
       font-size: 10px;
-      line-height: 1.25;
-      padding: 1px 3px;
-      border-radius: 3px;
+      line-height: 1.3;
+      padding: 1px 4px;
+      border-radius: 4px;
       background: var(--surface-2);
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      border-left: 2.5px solid transparent;
       max-width: 100%;
       display: block;
     }
-    .cell-pill.done { opacity: 0.4; text-decoration: line-through; }
+    .cell-pill.done { opacity: 0.38; text-decoration: line-through; }
 
     /* ТАЙМЛАЙН ДНЯ */
-    .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 46px; }
-    .timeline-hour { width: 48px; font-size: 12px; color: var(--muted); padding-top: 6px; flex-shrink: 0; }
-    .timeline-slot { flex: 1; min-width: 0; padding: 4px 0; }
+    .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 42px; }
+    .timeline-hour { width: 46px; font-size: 12px; color: var(--muted); padding-top: 8px; flex-shrink: 0; }
+    .timeline-slot { flex: 1; min-width: 0; padding: 2px 0; }
 
     /* SOMEDAY */
     .someday-box {
@@ -519,7 +607,7 @@
       width: 100%;
       max-width: 600px;
       border-radius: 18px 18px 0 0;
-      padding: 16px 16px 20px 16px;
+      padding: 16px 16px 22px 16px;
       max-height: 86vh;
       overflow-y: auto;
     }
@@ -545,11 +633,22 @@
     }
     .form-row-inline { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    .color-picker { display: flex; gap: 10px; margin-top: 4px; }
+    .color-picker { display: flex; gap: 9px; margin-top: 6px; flex-wrap: wrap; }
     .color-Swatch {
-      width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
     }
-    .color-Swatch.selected { border-color: var(--text); transform: scale(1.12); }
+    .color-Swatch.selected {
+      border-color: var(--text);
+      transform: scale(1.12);
+    }
 
     .subtask-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
     .btn-mini {
@@ -591,25 +690,35 @@
 
   <!-- ПРОКРУЧИВАЕМЫЙ КОНТЕНТ -->
   <main class="scroll-area" id="scrollArea">
+    <!-- Панель поиска и фильтрации по пастельным цветам и статусу -->
     <div class="search-wrap" id="searchWrap">
-      <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по всем задачам и заметкам..." oninput="render()">
+      <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по тексту или заметкам..." oninput="render()">
+      <div class="filter-row">
+        <div class="color-filter-bar" id="colorFilterBar"></div>
+        <div class="status-filter-bar">
+          <button class="status-chip active" id="stAll" onclick="setStatusFilter('all')">Все</button>
+          <button class="status-chip" id="stOpen" onclick="setStatusFilter('open')">Активные</button>
+          <button class="status-chip" id="stDone" onclick="setStatusFilter('done')">Готовые</button>
+        </div>
+      </div>
     </div>
 
     <div id="mainView"></div>
 
+    <!-- Блок Когда-нибудь (без текстовых подсказок на пустых строках) -->
     <div class="someday-box" id="somedayContainer" data-drop-date="__SOMEDAY__">
       <div class="day-header">
         <span class="day-name">Когда-нибудь</span>
         <span class="day-date">Без даты</span>
       </div>
       <ul class="task-list" id="somedayList" data-list-date="__SOMEDAY__"></ul>
-      <input type="text" class="add-input" placeholder="+ Добавить задачу..." 
+      <input type="text" class="add-input" aria-label="Новая задача"
              onkeydown="if(event.key==='Enter'){addTask(null, null, this); this.blur();}"
              onblur="addTask(null, null, this)">
     </div>
   </main>
 
-  <!-- НИЖНЯЯ ПАНЕЛЬ (Прижата к самому низу) -->
+  <!-- НИЖНЯЯ ПАНЕЛЬ -->
   <nav class="bottom-bar">
     <div class="view-switcher">
       <button class="view-btn" id="btnMonth" onclick="setView('month')" title="Месяц">
@@ -645,7 +754,10 @@
   <div class="sheet">
     <div class="sheet-header">
       <strong>Детали задачи</strong>
-      <button class="btn-mini" onclick="closeTaskModal()">Готово</button>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-mini" id="btnJumpToDay" onclick="jumpToTaskDay()" style="display:none;">Перейти к дню ↗</button>
+        <button class="btn-mini" onclick="closeTaskModal()">Готово</button>
+      </div>
     </div>
     <div class="form-row">
       <input type="text" id="editTitle" class="form-input" placeholder="Название задачи" style="font-weight:600">
@@ -661,13 +773,13 @@
       </div>
     </div>
     <div class="form-row">
-      <label class="form-label">Цвет маркера</label>
+      <label class="form-label">Цвет выделения текста</label>
       <div class="color-picker" id="colorPicker"></div>
     </div>
     <div class="form-row">
       <label class="form-label">Подзадачи</label>
       <div id="subtasksList"></div>
-      <input type="text" id="newSubtaskInput" class="add-input" placeholder="+ Добавить подзадачу..."
+      <input type="text" id="newSubtaskInput" class="add-input" style="border-bottom:1px solid var(--border);" placeholder="Новая подзадача..."
              onkeydown="if(event.key==='Enter'){addSubtaskFromInput(); this.blur();}"
              onblur="addSubtaskFromInput()">
     </div>
@@ -702,10 +814,17 @@
     </div>
 
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-size:15px; font-weight:500;">Обновить интерфейс (сброс кеша)</span>
+      <span style="font-size:15px; font-weight:500;">Обновить версию (сброс кеша)</span>
       <button class="btn-mini" onclick="forceUpdateApp()">Обновить ↻</button>
     </div>
 
+    <!-- Подписи к пастельным цветам для удобного поиска -->
+    <div class="menu-section">
+      <label class="form-label" style="font-weight:600; color:var(--text);">Названия цветов (для фильтра в поиске)</label>
+      <div id="colorLabelsEditor" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;"></div>
+    </div>
+
+    <!-- Повторяющиеся задачи -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Повторяющиеся задачи (шаблоны)</label>
       <div id="recurringList" style="margin:6px 0;"></div>
@@ -720,6 +839,7 @@
       </div>
     </div>
 
+    <!-- Резервная копия -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Резервная копия (JSON)</label>
       <div style="display:flex; gap:8px; margin-top:8px;">
@@ -750,23 +870,51 @@
 
   const STORAGE_KEY = 'tweek_cal_tasks_v1';
   const CONFIG_KEY = 'tweek_cal_config_v1';
-  const COLORS = ['transparent', '#ff3b30', '#ff9500', '#34c759', '#007aff', '#af52de'];
+
+  // Пастельные цвета (привязаны к CSS-переменным для поддержки светлой и темной темы)
+  const PALETTE = [
+    { id: 'none',   css: 'transparent',       defaultName: 'Без цвета' },
+    { id: 'yellow', css: 'var(--hl-yellow)',  defaultName: 'Лимонный' },
+    { id: 'peach',  css: 'var(--hl-peach)',   defaultName: 'Персиковый' },
+    { id: 'pink',   css: 'var(--hl-pink)',    defaultName: 'Розовый' },
+    { id: 'lilac',  css: 'var(--hl-lilac)',   defaultName: 'Лавандовый' },
+    { id: 'blue',   css: 'var(--hl-blue)',    defaultName: 'Голубой' },
+    { id: 'mint',   css: 'var(--hl-mint)',    defaultName: 'Мятный' }
+  ];
+
+  // Конвертация старых резких цветов в новые пастельные ID
+  const LEGACY_COLOR_MAP = {
+    'transparent': 'none',
+    '#ff3b30': 'pink',
+    '#ff9500': 'peach',
+    '#34c759': 'mint',
+    '#007aff': 'blue',
+    '#af52de': 'lilac'
+  };
 
   let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","recurring":[]}');
+  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","recurring":[],"colorNames":{}}');
   if (!Array.isArray(config.recurring)) config.recurring = [];
+  if (!config.colorNames) config.colorNames = {};
 
   let currentView = 'week';
   let lastCalendarView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
   let editingTaskId = null;
-  let editingColor = 'transparent';
+  let editingColor = 'none';
   let revealedCreatedIds = new Set();
+
+  // Состояние фильтров в поиске
+  let activeColorFilter = 'all'; // 'all' | 'yellow' | 'peach' | ...
+  let activeStatusFilter = 'all'; // 'all' | 'open' | 'done'
 
   tasks.forEach((t, idx) => {
     if (typeof t.order !== 'number') t.order = (idx + 1) * 1000;
     if (!t.createdAt) t.createdAt = t.updatedAt || Date.now();
+    if (!t.color || LEGACY_COLOR_MAP[t.color]) {
+      t.color = LEGACY_COLOR_MAP[t.color] || 'none';
+    }
   });
 
   const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -774,6 +922,17 @@
   const SHORT_DAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
   document.documentElement.setAttribute('data-theme', config.theme || 'light');
+
+  function getColorCss(colorId) {
+    const found = PALETTE.find(p => p.id === colorId);
+    return found ? found.css : 'transparent';
+  }
+
+  function getColorLabel(colorId) {
+    const found = PALETTE.find(p => p.id === colorId);
+    if (!found) return '';
+    return config.colorNames[colorId] || found.defaultName;
+  }
 
   function toISODate(d) {
     const z = n => ('0' + n).slice(-2);
@@ -840,7 +999,7 @@
           date: todayStr,
           time: '',
           notes: '',
-          color: 'transparent',
+          color: 'none',
           subtasks: [],
           completed: false,
           rollover: true,
@@ -872,7 +1031,7 @@
       date: dateStr,
       time: timeStr || '',
       notes: '',
-      color: 'transparent',
+      color: 'none',
       subtasks: [],
       completed: false,
       rollover: true,
@@ -900,31 +1059,81 @@
     render();
   }
 
+  // --- ФИЛЬТРЫ В ПОИСКЕ ---
+  function renderSearchFilters() {
+    const bar = document.getElementById('colorFilterBar');
+    const allBtn = `
+      <div class="filter-swatch ${activeColorFilter === 'all' ? 'active' : ''}"
+           style="background:var(--surface-2);"
+           onclick="setColorFilter('all')">Все цвета</div>
+    `;
+    const colorBtns = PALETTE.filter(p => p.id !== 'none').map(p => `
+      <div class="filter-swatch ${activeColorFilter === p.id ? 'active' : ''}"
+           style="background:${p.css};"
+           onclick="setColorFilter('${p.id}')">${escapeHTML(getColorLabel(p.id))}</div>
+    `).join('');
+    bar.innerHTML = allBtn + colorBtns;
+
+    document.getElementById('stAll').classList.toggle('active', activeStatusFilter === 'all');
+    document.getElementById('stOpen').classList.toggle('active', activeStatusFilter === 'open');
+    document.getElementById('stDone').classList.toggle('active', activeStatusFilter === 'done');
+  }
+
+  function setColorFilter(cId) {
+    activeColorFilter = (activeColorFilter === cId && cId !== 'all') ? 'all' : cId;
+    render();
+  }
+
+  function setStatusFilter(st) {
+    activeStatusFilter = st;
+    render();
+  }
+
+  // --- МОДАЛКА ДЕТАЛЕЙ ЗАДАЧИ ---
   function openTaskModal(id) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
     editingTaskId = id;
-    editingColor = t.color || 'transparent';
+    editingColor = t.color || 'none';
     document.getElementById('editTitle').value = t.title;
     document.getElementById('editDate').value = t.date || '';
     document.getElementById('editTime').value = t.time || '';
     document.getElementById('editNotes').value = t.notes || '';
     document.getElementById('editRollover').checked = t.rollover !== false;
     document.getElementById('editCreatedInfo').textContent = `Создано: ${formatDateTimeStamp(t.createdAt || t.updatedAt)}`;
+
+    // Показываем кнопку быстрого перехода к дню, если у задачи есть дата
+    const jumpBtn = document.getElementById('btnJumpToDay');
+    jumpBtn.style.display = t.date ? 'inline-block' : 'none';
+
     renderColorPicker();
     renderSubtasks(t);
     document.getElementById('taskModal').classList.add('open');
   }
 
+  function jumpToTaskDay() {
+    if (!editingTaskId) return;
+    const t = tasks.find(x => x.id === editingTaskId);
+    const targetDate = document.getElementById('editDate').value || (t ? t.date : null);
+    closeTaskModal();
+    if (targetDate) {
+      const [y, m, d] = targetDate.split('-').map(Number);
+      anchorDate = new Date(y, m - 1, d);
+      selectedDateStr = targetDate;
+      setView('week');
+    }
+  }
+
   function renderColorPicker() {
-    document.getElementById('colorPicker').innerHTML = COLORS.map(c => `
-      <div class="color-Swatch ${editingColor === c ? 'selected' : ''}" 
-           style="background:${c === 'transparent' ? 'var(--surface-2)' : c}"
-           onclick="selectEditColor('${c}')"></div>
+    document.getElementById('colorPicker').innerHTML = PALETTE.map(p => `
+      <div class="color-Swatch ${editingColor === p.id ? 'selected' : ''}" 
+           title="${escapeHTML(getColorLabel(p.id))}"
+           style="background:${p.id === 'none' ? 'var(--surface-2)' : p.css}"
+           onclick="selectEditColor('${p.id}')">${p.id === 'none' ? '✕' : ''}</div>
     `).join('');
   }
 
-  function selectEditColor(c) { editingColor = c; renderColorPicker(); }
+  function selectEditColor(cId) { editingColor = cId; renderColorPicker(); }
 
   function renderSubtasks(t) {
     const list = t.subtasks || [];
@@ -995,12 +1204,32 @@
     document.getElementById('taskModal').classList.remove('open');
   }
 
+  // --- МОДАЛКА ФУНКЦИЙ ---
   function openFunctionsModal() {
     renderRecurringList();
+    renderColorLabelsEditor();
     document.getElementById('functionsModal').classList.add('open');
   }
   function closeFunctionsModal() {
     document.getElementById('functionsModal').classList.remove('open');
+    render();
+  }
+
+  function renderColorLabelsEditor() {
+    const box = document.getElementById('colorLabelsEditor');
+    box.innerHTML = PALETTE.filter(p => p.id !== 'none').map(p => `
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="width:16px; height:16px; border-radius:50%; background:${p.css}; flex-shrink:0; border:1px solid var(--border);"></span>
+        <input type="text" class="form-input" style="padding:5px 8px; font-size:13px;"
+               value="${escapeHTML(getColorLabel(p.id))}"
+               onchange="updateColorLabel('${p.id}', this.value)">
+      </div>
+    `).join('');
+  }
+
+  function updateColorLabel(colorId, val) {
+    config.colorNames[colorId] = val.trim();
+    saveConfig();
   }
 
   function renderRecurringList() {
@@ -1056,6 +1285,8 @@
       wrap.classList.remove('open');
       somedayBox.style.display = 'block';
       sb.value = '';
+      activeColorFilter = 'all';
+      activeStatusFilter = 'all';
     }
     render();
   }
@@ -1065,7 +1296,6 @@
       setView(lastCalendarView || 'week');
     } else {
       setView('all');
-      setTimeout(() => document.getElementById('searchInput').focus(), 50);
     }
   }
 
@@ -1114,13 +1344,23 @@
     reader.readAsText(file);
   }
 
+  // --- ВЫБОРКА И АВТОСОРТИРОВКА (выполненные задачи опускаются вниз дня) ---
   function getActiveTasks() {
     const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
     return tasks.filter(t => {
       if (t.deleted) return false;
+      if (currentView === 'all') {
+        if (activeColorFilter !== 'all' && (t.color || 'none') !== activeColorFilter) return false;
+        if (activeStatusFilter === 'open' && t.completed) return false;
+        if (activeStatusFilter === 'done' && !t.completed) return false;
+      }
       if (!q) return true;
       return t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q);
     }).sort((a, b) => {
+      // Выполненные задачи автоматически опускаются в низ списка внутри дня
+      if (Boolean(a.completed) !== Boolean(b.completed)) {
+        return a.completed ? 1 : -1;
+      }
       const ta = a.time || '';
       const tb = b.time || '';
       if (ta !== tb) {
@@ -1136,6 +1376,8 @@
     const subCount = (t.subtasks || []).length;
     const subDone = (t.subtasks || []).filter(s => s.done).length;
     const isShowingCreated = revealedCreatedIds.has(t.id);
+    const hasHighlight = t.color && t.color !== 'none';
+    const bgCss = hasHighlight ? getColorCss(t.color) : 'transparent';
 
     const badgeHtml = showDateBadge ? `
       <span class="date-stamp-badge ${isShowingCreated ? 'showing-created' : ''}" 
@@ -1147,9 +1389,8 @@
     return `
       <li class="task-item ${t.completed ? 'done' : ''}" data-task-id="${t.id}">
         <div class="checkbox" onclick="toggleTask('${t.id}')">${t.completed ? '✓' : ''}</div>
-        ${t.color && t.color !== 'transparent' ? `<div class="color-pill-indicator" style="background:${t.color}"></div>` : ''}
         <div class="task-body" onclick="openTaskModal('${t.id}')">
-          <span class="task-text">${escapeHTML(t.title)}</span>
+          <span class="task-text ${hasHighlight ? 'highlighted' : ''}" style="background:${bgCss}">${escapeHTML(t.title)}</span>
           ${(!showDateBadge && (t.time || subCount || t.notes)) ? `
             <div class="task-meta">
               ${t.time ? `<span>⏰ ${t.time}</span>` : ''}
@@ -1173,14 +1414,16 @@
     sunday.setDate(monday.getDate() + 6);
 
     document.getElementById('headerTitle').textContent = 
-      currentView === 'all' ? 'Все задачи' : MONTHS_RU[anchorDate.getMonth()];
+      currentView === 'all' ? 'Поиск и задачи' : MONTHS_RU[anchorDate.getMonth()];
     document.getElementById('weekRangeBadge').textContent = 
       currentView === 'all' ? `${visibleTasks.length}` : `${monday.getDate()}–${sunday.getDate()}`;
 
     const main = document.getElementById('mainView');
 
     if (currentView === 'all') {
+      renderSearchFilters();
       const sortedAll = [...visibleTasks].sort((a, b) => {
+        if (Boolean(a.completed) !== Boolean(b.completed)) return a.completed ? 1 : -1;
         const da = a.date || '9999-99-99';
         const db = b.date || '9999-99-99';
         if (da !== db) return da.localeCompare(db);
@@ -1188,13 +1431,13 @@
       });
 
       main.innerHTML = `
-        <div class="day-block" style="border-bottom:none;">
+        <div class="day-block" style="border-bottom:none; padding-top:4px;">
           <div class="day-header">
-            <span class="day-name">Все записи</span>
-            <span class="day-date">Тап по дате → дата создания</span>
+            <span class="day-name">Найдено записей: ${sortedAll.length}</span>
+            <span class="day-date">Тап по дате → создана</span>
           </div>
           <ul class="task-list">
-            ${sortedAll.length ? sortedAll.map(t => renderTaskItem(t, true)).join('') : '<li style="padding:16px 0; color:var(--muted); font-size:14px;">Задач не найдено</li>'}
+            ${sortedAll.length ? sortedAll.map(t => renderTaskItem(t, true)).join('') : '<li style="padding:16px 0; color:var(--muted); font-size:14px;">Задач по выбранному фильтру нет</li>'}
           </ul>
         </div>
       `;
@@ -1219,7 +1462,7 @@
               <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
             </div>
             <ul class="task-list" data-list-date="${dateStr}">${dayTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
-            <input type="text" class="add-input" placeholder="+ Добавить задачу..." 
+            <input type="text" class="add-input" aria-label="Новая задача"
                    onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
                    onblur="addTask('${dateStr}', null, this)">
           </div>
@@ -1251,10 +1494,13 @@
                data-drop-date="${dateStr}"
                onclick="selectMonthDay('${dateStr}')">
             <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
-            ${dayTasks.slice(0, 3).map(t => `
-              <div class="cell-pill ${t.completed ? 'done' : ''}" style="border-left-color:${t.color || 'transparent'}">
-                ${t.time ? t.time + ' ' : ''}${escapeHTML(t.title)}
-              </div>`).join('')}
+            ${dayTasks.slice(0, 3).map(t => {
+              const pillBg = (t.color && t.color !== 'none') ? getColorCss(t.color) : 'var(--surface-2)';
+              return `
+                <div class="cell-pill ${t.completed ? 'done' : ''}" style="background:${pillBg}">
+                  ${t.time ? t.time + ' ' : ''}${escapeHTML(t.title)}
+                </div>`;
+            }).join('')}
             ${dayTasks.length > 3 ? `<div class="cell-pill">+${dayTasks.length - 3}</div>` : ''}
           </div>
         `;
@@ -1265,11 +1511,11 @@
       gridHtml += `
         <div class="day-block" data-drop-date="${selectedDateStr}">
           <div class="day-header">
-            <span class="day-name">Задачи на ${selectedDateStr}</span>
+            <span class="day-name">${selectedDateStr}</span>
             <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
           </div>
           <ul class="task-list" data-list-date="${selectedDateStr}">${selTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
-          <input type="text" class="add-input" placeholder="+ Добавить на ${selectedDateStr}..." 
+          <input type="text" class="add-input" aria-label="Новая задача"
                  onkeydown="if(event.key==='Enter'){addTask('${selectedDateStr}', null, this); this.blur();}"
                  onblur="addTask('${selectedDateStr}', null, this)">
         </div>
@@ -1288,7 +1534,7 @@
             <span class="day-date">${dateStr}</span>
           </div>
           <ul class="task-list" data-list-date="${dateStr}">${untimed.map(t => renderTaskItem(t, false)).join('')}</ul>
-          <input type="text" class="add-input" placeholder="+ Задача на весь день..." 
+          <input type="text" class="add-input" aria-label="Новая задача"
                  onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
                  onblur="addTask('${dateStr}', null, this)">
         </div>
@@ -1302,7 +1548,7 @@
             <div class="timeline-hour">${prefix}:00</div>
             <div class="timeline-slot">
               <ul class="task-list" data-list-date="${dateStr}">${slotTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
-              <input type="text" class="add-input" placeholder="+" style="padding:2px 0; font-size:13px;"
+              <input type="text" class="add-input" style="height:26px; padding:2px 0; font-size:14px;" aria-label="Новая задача"
                      onkeydown="if(event.key==='Enter'){addTask('${dateStr}', '${prefix}:00', this); this.blur();}"
                      onblur="addTask('${dateStr}', '${prefix}:00', this)">
             </div>
@@ -1334,6 +1580,7 @@
     return String(str || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
 
+  // --- DRAG AND DROP С ЖИВЫМ СМЕЩЕНИЕМ ---
   let dragState = null;
 
   function initDragStart(taskId, clientX, clientY, sourceRow) {
@@ -1343,6 +1590,9 @@
     const ghost = document.createElement('div');
     ghost.className = 'drag-ghost';
     ghost.textContent = task.title;
+    if (task.color && task.color !== 'none') {
+      ghost.style.background = getColorCss(task.color);
+    }
     document.body.appendChild(ghost);
 
     sourceRow.classList.add('dragging-placeholder');
