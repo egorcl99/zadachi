@@ -43,12 +43,13 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Жесткая привязка к краям экрана iPhone без лишнего зазора снизу */
+    /* Растягиваем холст на весь физический экран iPhone включая зону Home Indicator */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100%;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
       overflow: hidden;
       background-color: var(--bg);
       color: var(--text);
@@ -57,28 +58,20 @@
       -webkit-user-select: none;
     }
 
-    .app-shell {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    /* ВЕРХНЯЯ ПАНЕЛЬ */
+    /* ВЕРХНЯЯ ПАНЕЛЬ (Прибита к верху) */
     .top-bar {
-      flex-shrink: 0;
-      padding: calc(6px + env(safe-area-inset-top)) 12px 8px 12px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 8px 12px;
       background: var(--bg);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 6px;
-      width: 100%;
-      z-index: 40;
+      z-index: 50;
     }
 
     .top-left {
@@ -160,13 +153,25 @@
       cursor: pointer;
     }
 
-    /* Полоса поиска (появляется в режиме Все задачи / Поиск) */
+    /* ПРОКРУЧИВАЕМАЯ ОБЛАСТЬ */
+    .scroll-area {
+      position: fixed;
+      top: calc(45px + env(safe-area-inset-top, 0px));
+      bottom: 44px; /* Ровно под компактную нижнюю панель */
+      left: 0;
+      right: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 6px 14px 24px 14px;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Полоса поиска внутри верхней части */
     .search-wrap {
-      flex-shrink: 0;
-      padding: 8px 12px;
-      background: var(--bg);
+      padding: 4px 0 10px 0;
       display: none;
-      border-bottom: 1px solid var(--border);
     }
     .search-wrap.open { display: block; }
 
@@ -181,30 +186,20 @@
       outline: none;
     }
 
-    /* ЦЕНТРАЛЬНАЯ ПРОКРУЧИВАЕМАЯ ОБЛАСТЬ */
-    .scroll-area {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding: 6px 14px 20px 14px;
-      width: 100%;
-      max-width: 650px;
-      margin: 0 auto;
-    }
-
-    /* НИЖНЯЯ ПАНЕЛЬ — Опущена максимально низко */
+    /* НИЖНЯЯ ПАНЕЛЬ — Прижата вплотную к физическому низу экрана (БЕЗ safe-area-inset-bottom) */
     .bottom-bar {
-      flex-shrink: 0;
-      padding: 5px 16px calc(2px + env(safe-area-inset-bottom, 0px)) 16px;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 44px;
+      padding: 4px 16px 6px 16px;
       background: var(--bg);
       border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      width: 100%;
-      z-index: 40;
+      z-index: 50;
     }
 
     .view-switcher {
@@ -217,7 +212,7 @@
 
     .view-btn {
       width: 42px;
-      height: 30px;
+      height: 28px;
       border: none;
       background: transparent;
       border-radius: 8px;
@@ -236,8 +231,8 @@
     }
 
     .view-btn svg {
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
@@ -248,8 +243,8 @@
     .search-trigger-btn {
       position: absolute;
       right: 14px;
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: var(--surface-2);
       border: none;
@@ -267,8 +262,8 @@
     }
 
     .search-trigger-btn svg {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
@@ -367,7 +362,6 @@
       margin-top: 2px;
     }
 
-    /* Плашка даты/времени в режиме "Все задачи", меняющаяся на дату создания при тапе */
     .date-stamp-badge {
       font-size: 11px;
       font-weight: 500;
@@ -525,7 +519,7 @@
       width: 100%;
       max-width: 600px;
       border-radius: 18px 18px 0 0;
-      padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) 16px;
+      padding: 16px 16px 20px 16px;
       max-height: 86vh;
       overflow-y: auto;
     }
@@ -577,7 +571,6 @@
 </head>
 <body>
 
-<div class="app-shell">
   <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
   <header class="top-bar">
     <div class="top-left">
@@ -596,13 +589,12 @@
     </div>
   </header>
 
-  <!-- ПОЛОСА ПОИСКА (Активна в режиме "Все задачи") -->
-  <div class="search-wrap" id="searchWrap">
-    <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по всем задачам и заметкам..." oninput="render()">
-  </div>
-
   <!-- ПРОКРУЧИВАЕМЫЙ КОНТЕНТ -->
   <main class="scroll-area" id="scrollArea">
+    <div class="search-wrap" id="searchWrap">
+      <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по всем задачам и заметкам..." oninput="render()">
+    </div>
+
     <div id="mainView"></div>
 
     <div class="someday-box" id="somedayContainer" data-drop-date="__SOMEDAY__">
@@ -617,7 +609,7 @@
     </div>
   </main>
 
-  <!-- НИЖНЯЯ ПАНЕЛЬ -->
+  <!-- НИЖНЯЯ ПАНЕЛЬ (Прижата к самому низу) -->
   <nav class="bottom-bar">
     <div class="view-switcher">
       <button class="view-btn" id="btnMonth" onclick="setView('month')" title="Месяц">
@@ -640,7 +632,6 @@
       </button>
     </div>
 
-    <!-- Кнопка "Все задачи + Поиск" справа в углу -->
     <button class="search-trigger-btn" id="btnSearch" onclick="toggleAllTasksView()" title="Все задачи и поиск">
       <svg viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="7"/>
@@ -648,7 +639,6 @@
       </svg>
     </button>
   </nav>
-</div>
 
 <!-- ШТОРКА ДЕТАЛЕЙ ЗАДАЧИ -->
 <div class="modal-backdrop" id="taskModal" onclick="if(event.target===this) closeTaskModal()">
@@ -712,8 +702,8 @@
     </div>
 
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-size:15px; font-weight:500;">Список всех записей</span>
-      <button class="btn-mini" onclick="closeFunctionsModal(); setView('all');">Открыть список →</button>
+      <span style="font-size:15px; font-weight:500;">Обновить интерфейс (сброс кеша)</span>
+      <button class="btn-mini" onclick="forceUpdateApp()">Обновить ↻</button>
     </div>
 
     <div class="menu-section">
@@ -746,6 +736,18 @@
     window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
   }
 
+  async function forceUpdateApp() {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) await r.unregister();
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      for (const k of keys) await caches.delete(k);
+    }
+    window.location.reload(true);
+  }
+
   const STORAGE_KEY = 'tweek_cal_tasks_v1';
   const CONFIG_KEY = 'tweek_cal_config_v1';
   const COLORS = ['transparent', '#ff3b30', '#ff9500', '#34c759', '#007aff', '#af52de'];
@@ -754,13 +756,13 @@
   let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","recurring":[]}');
   if (!Array.isArray(config.recurring)) config.recurring = [];
 
-  let currentView = 'week'; // 'week' | 'month' | 'day' | 'all'
+  let currentView = 'week';
   let lastCalendarView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
   let editingTaskId = null;
   let editingColor = 'transparent';
-  let revealedCreatedIds = new Set(); // Хранит ID задач, у которых нажали на дату, чтобы показать дату создания
+  let revealedCreatedIds = new Set();
 
   tasks.forEach((t, idx) => {
     if (typeof t.order !== 'number') t.order = (idx + 1) * 1000;
@@ -898,7 +900,6 @@
     render();
   }
 
-  // --- МОДАЛКА ЗАДАЧИ ---
   function openTaskModal(id) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
@@ -994,7 +995,6 @@
     document.getElementById('taskModal').classList.remove('open');
   }
 
-  // --- МОДАЛКА ФУНКЦИЙ ---
   function openFunctionsModal() {
     renderRecurringList();
     document.getElementById('functionsModal').classList.add('open');
@@ -1036,7 +1036,6 @@
     renderRecurringList();
   }
 
-  // --- НАВИГАЦИЯ И ПЕРЕКЛЮЧЕНИЕ ВИДОВ ---
   function setView(v) {
     if (v !== 'all') lastCalendarView = v;
     currentView = v;
@@ -1115,7 +1114,6 @@
     reader.readAsText(file);
   }
 
-  // --- ОТРИСОВКА ---
   function getActiveTasks() {
     const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
     return tasks.filter(t => {
@@ -1141,8 +1139,7 @@
 
     const badgeHtml = showDateBadge ? `
       <span class="date-stamp-badge ${isShowingCreated ? 'showing-created' : ''}" 
-            onclick="toggleCreatedStamp('${t.id}', event)"
-            title="Нажмите, чтобы увидеть дату создания">
+            onclick="toggleCreatedStamp('${t.id}', event)">
         ${isShowingCreated ? 'Создано: ' + formatDateTimeStamp(t.createdAt || t.updatedAt) : formatShortDate(t.date, t.time)}
       </span>
     ` : '';
@@ -1183,7 +1180,6 @@
     const main = document.getElementById('mainView');
 
     if (currentView === 'all') {
-      // Полный список всех задач: нажатие на дату/время показывает дату создания записи
       const sortedAll = [...visibleTasks].sort((a, b) => {
         const da = a.date || '9999-99-99';
         const db = b.date || '9999-99-99';
@@ -1195,7 +1191,7 @@
         <div class="day-block" style="border-bottom:none;">
           <div class="day-header">
             <span class="day-name">Все записи</span>
-            <span class="day-date">Нажмите на дату справа → дата создания</span>
+            <span class="day-date">Тап по дате → дата создания</span>
           </div>
           <ul class="task-list">
             ${sortedAll.length ? sortedAll.map(t => renderTaskItem(t, true)).join('') : '<li style="padding:16px 0; color:var(--muted); font-size:14px;">Задач не найдено</li>'}
@@ -1338,7 +1334,6 @@
     return String(str || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
 
-  // --- DRAG AND DROP С ЖИВЫМ СМЕЩЕНИЕМ ---
   let dragState = null;
 
   function initDragStart(taskId, clientX, clientY, sourceRow) {
