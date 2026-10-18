@@ -18,13 +18,17 @@
       --surface-2: #f2f2f7;
       --text: #1c1c1e;
       --muted: #8e8e93;
-      --border: #ececef;
+      --border: #e5e5ea;
       --line: #1c1c1e;
       --accent: #1c1c1e;
       --accent-text: #ffffff;
       --today: #ff3b30;
+      --inc-color: #248a3d;
+      --inc-bg: #d1f7d9;
+      --exp-color: #d70015;
+      --exp-bg: #ffd7d9;
 
-      /* Пастельная палитра хайлайтеров (Светлая тема) */
+      /* Пастельная палитра хайлайтеров */
       --hl-yellow: #fff3b0;
       --hl-peach:  #ffd8be;
       --hl-pink:   #ffc6d9;
@@ -44,8 +48,11 @@
       --accent: #ffffff;
       --accent-text: #000000;
       --today: #ff453a;
+      --inc-color: #30d158;
+      --inc-bg: #164625;
+      --exp-color: #ff453a;
+      --exp-bg: #541b1b;
 
-      /* Приглушенная пастельная палитра для Темной темы */
       --hl-yellow: #5c4d16;
       --hl-peach:  #61371e;
       --hl-pink:   #5e243a;
@@ -178,7 +185,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding: 6px 14px 28px 14px;
+      padding: 6px 12px 28px 12px;
       max-width: 650px;
       margin: 0 auto;
     }
@@ -234,12 +241,11 @@
       justify-content: center;
       cursor: pointer;
       white-space: nowrap;
-      transition: transform 0.12s;
     }
 
     .filter-swatch.active {
       border-color: var(--text);
-      transform: scale(1.06);
+      transform: scale(1.05);
     }
 
     .status-filter-bar {
@@ -321,9 +327,8 @@
       stroke-linejoin: round;
     }
 
-    .search-trigger-btn {
+    .corner-trigger-btn {
       position: absolute;
-      right: 14px;
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -333,16 +338,20 @@
       align-items: center;
       justify-content: center;
       color: var(--text);
+      font-weight: 700;
+      font-size: 14px;
       cursor: pointer;
       padding: 0;
     }
+    .corner-trigger-btn.left { left: 14px; }
+    .corner-trigger-btn.right { right: 14px; }
 
-    .search-trigger-btn.active {
+    .corner-trigger-btn.active {
       background: var(--accent);
       color: var(--accent-text);
     }
 
-    .search-trigger-btn svg {
+    .corner-trigger-btn svg {
       width: 15px;
       height: 15px;
       stroke: currentColor;
@@ -350,12 +359,40 @@
       stroke-width: 2;
     }
 
-    /* ДНИ И ЗАДАЧИ */
+    /* ДНИ И ЗАДАЧИ (СПИСОК И ТАБЛИЦА 2x4) */
     .day-block {
       padding: 12px 2px 4px 2px;
       border-bottom: 2px solid var(--line);
       transition: background-color 0.15s;
     }
+
+    /* Сетка недели 4 строки × 2 столбца (Слева Пн-Чт, Справа Пт-Когда-нибудь) */
+    .week-grid-2x4 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(4, minmax(115px, auto));
+      grid-auto-flow: column;
+      border-top: 1.5px solid var(--line);
+      border-left: 1.5px solid var(--line);
+      margin-top: 4px;
+    }
+
+    .week-grid-2x4 .day-block {
+      padding: 6px 6px 4px 6px;
+      border-right: 1.5px solid var(--line);
+      border-bottom: 1.5px solid var(--line);
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .week-grid-2x4 .day-name { font-size: 13px; }
+    .week-grid-2x4 .day-date { font-size: 11px; }
+    .week-grid-2x4 .task-item { padding: 4px 1px; font-size: 13px; gap: 5px; }
+    .week-grid-2x4 .checkbox { width: 16px; height: 16px; font-size: 10px; }
+    .week-grid-2x4 .task-text.highlighted { padding: 2px 6px; }
+    .week-grid-2x4 .drag-handle { padding: 3px; font-size: 13px; }
+    .week-grid-2x4 .add-input { height: 26px; font-size: 13px; margin-top: auto; }
 
     .day-header {
       display: flex;
@@ -505,7 +542,7 @@
       display: block;
     }
 
-    /* СЕТКА МЕСЯЦА */
+    /* СЕТКА МЕСЯЦА И ПОКРАСКА СТРОКИ С ЧИСЛОМ */
     .month-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -514,7 +551,7 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       width: 100%;
     }
 
@@ -531,7 +568,7 @@
     .month-cell {
       background: var(--surface);
       min-height: 76px;
-      padding: 4px 3px;
+      padding: 0 0 3px 0;
       display: flex;
       flex-direction: column;
       gap: 2px;
@@ -542,11 +579,22 @@
     .month-cell.other-month { opacity: 0.35; }
     .month-cell.selected { outline: 2px solid var(--today); outline-offset: -2px; z-index: 2; }
 
+    /* Верхняя строка с числом и 3-буквенной меткой (красится целиком) */
+    .cell-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 2px 4px;
+      min-height: 22px;
+      border-bottom: 1px solid transparent;
+    }
+
     .cell-number {
-      font-size: 12px;
-      font-weight: 600;
-      width: 20px;
-      height: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -555,9 +603,29 @@
     }
     .cell-number.is-today { background: var(--today); color: #fff; }
 
+    .cell-day-tag {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      text-transform: uppercase;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 28px;
+      text-align: right;
+    }
+
+    .cell-body {
+      padding: 0 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
     .cell-pill {
       font-size: 10px;
-      line-height: 1.3;
+      line-height: 1.25;
       padding: 1px 4px;
       border-radius: 4px;
       background: var(--surface-2);
@@ -569,6 +637,33 @@
       display: block;
     }
     .cell-pill.done { opacity: 0.38; text-decoration: line-through; }
+
+    /* ФИНАНСОВЫЕ СВОДКИ И СТИКЕРЫ В МЕСЯЦЕ */
+    .finance-summary-card {
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+    .fin-stat-label { font-size: 11px; color: var(--muted); display: block; }
+    .fin-stat-val { font-size: 15px; font-weight: 700; margin-top: 2px; display: block; }
+    .fin-inc { color: var(--inc-color); }
+    .fin-exp { color: var(--exp-color); }
+
+    .fin-pill-inc {
+      background: var(--inc-bg);
+      color: var(--inc-color);
+      font-weight: 600;
+    }
+    .fin-pill-exp {
+      background: var(--exp-bg);
+      color: var(--exp-color);
+      font-weight: 600;
+    }
 
     /* ТАЙМЛАЙН ДНЯ */
     .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 42px; }
@@ -583,7 +678,7 @@
       border-radius: 12px;
     }
 
-    /* ВСПЛЫВАЮЩАЯ ПЛАШКА ОТМЕНЫ УДАЛЕНИЯ (UNDO TOAST) */
+    /* UNDO TOAST */
     .undo-toast {
       position: fixed;
       left: 50%;
@@ -691,6 +786,10 @@
       border-radius: 6px;
       cursor: pointer;
     }
+    .btn-mini.active {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
     .menu-section {
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
@@ -734,7 +833,7 @@
 
     <div id="mainView"></div>
 
-    <!-- Блок Когда-нибудь -->
+    <!-- Блок Когда-нибудь (показывается, когда неделя в режиме обычного списка) -->
     <div class="someday-box" id="somedayContainer" data-drop-date="__SOMEDAY__">
       <div class="day-header">
         <span class="day-name">Когда-нибудь</span>
@@ -755,6 +854,11 @@
 
   <!-- НИЖНЯЯ ПАНЕЛЬ -->
   <nav class="bottom-bar">
+    <!-- Кнопка "Финансы" слева в углу -->
+    <button class="corner-trigger-btn left" id="btnFinance" onclick="toggleFinanceView()" title="Доходы и расходы">
+      ₽
+    </button>
+
     <div class="view-switcher">
       <button class="view-btn" id="btnMonth" onclick="setView('month')" title="Месяц">
         <svg viewBox="0 0 24 24">
@@ -776,7 +880,8 @@
       </button>
     </div>
 
-    <button class="search-trigger-btn" id="btnSearch" onclick="toggleAllTasksView()" title="Все задачи и поиск">
+    <!-- Кнопка "Поиск / Все задачи" справа в углу -->
+    <button class="corner-trigger-btn right" id="btnSearch" onclick="toggleAllTasksView()" title="Все задачи и поиск">
       <svg viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="7"/>
         <line x1="20" y1="20" x2="16.2" y2="16.2"/>
@@ -835,6 +940,68 @@
   </div>
 </div>
 
+<!-- ШТОРКА ПОКРАСКИ СТРОКИ ЧИСЛА И МЕТКИ (3 БУКВЫ) В МЕСЯЦЕ -->
+<div class="modal-backdrop" id="dayMarkModal" onclick="if(event.target===this) closeDayMarkModal()">
+  <div class="sheet">
+    <div class="sheet-header">
+      <strong id="dayMarkModalTitle">Отметить день</strong>
+      <button class="btn-mini" onclick="closeDayMarkModal()">Готово</button>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Метка справа от числа (до 3 букв, например: ВЫХ, ДР, ЗП)</label>
+      <input type="text" id="dayMarkLabelInput" class="form-input" maxlength="3" placeholder="До 3 символов..." style="font-weight:700; text-transform:uppercase;">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Цвет верхней строки с числом</label>
+      <div class="color-picker" id="dayMarkColorPicker"></div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+      <button class="btn-mini" onclick="clearDayMark()" style="color:#ff3b30;">Сбросить отметку дня</button>
+    </div>
+  </div>
+</div>
+
+<!-- ШТОРКА ДЕТАЛЕЙ ФИНАНСОВОЙ ЗАПИСИ -->
+<div class="modal-backdrop" id="finModal" onclick="if(event.target===this) closeFinModal()">
+  <div class="sheet">
+    <div class="sheet-header">
+      <strong>Детали операции</strong>
+      <button class="btn-mini" onclick="closeFinModal()">Готово</button>
+    </div>
+    <div class="form-row form-row-inline">
+      <div>
+        <label class="form-label">Тип</label>
+        <select id="editFinType" class="form-select" onchange="populateEditFinCategories()">
+          <option value="income">+ Доход</option>
+          <option value="expense">− Расход</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Сумма</label>
+        <input type="number" inputmode="decimal" id="editFinAmount" class="form-input" style="font-weight:700;">
+      </div>
+    </div>
+    <div class="form-row form-row-inline">
+      <div>
+        <label class="form-label">Категория</label>
+        <select id="editFinCategory" class="form-select"></select>
+      </div>
+      <div>
+        <label class="form-label">Дата</label>
+        <input type="date" id="editFinDate" class="form-input">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Заметка к записи</label>
+      <textarea id="editFinNotes" class="form-textarea" rows="3" placeholder="Комментарий, детали..."></textarea>
+    </div>
+    <div id="editFinCreatedInfo" style="font-size:11px; color:var(--muted); margin-bottom:12px;"></div>
+    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+      <button class="btn-mini" onclick="deleteActiveFin()" style="color:#ff3b30;">Удалить запись ✕</button>
+    </div>
+  </div>
+</div>
+
 <!-- ШТОРКА ФУНКЦИЙ -->
 <div class="modal-backdrop" id="functionsModal" onclick="if(event.target===this) closeFunctionsModal()">
   <div class="sheet">
@@ -843,27 +1010,54 @@
       <button class="btn-mini" onclick="closeFunctionsModal()">Закрыть</button>
     </div>
 
-    <!-- КОРЗИНА УДАЛЕННЫХ ЗАПИСЕЙ -->
+    <!-- Настройка вида недели: Список или Таблица 2x4 -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-size:15px; font-weight:500;">Корзина удаленных записей</span>
+      <span style="font-size:15px; font-weight:500;">Вид вкладки «Неделя»</span>
+      <div style="display:flex; gap:4px;">
+        <button class="btn-mini" id="btnLayoutList" onclick="setWeekLayout('list')">Список</button>
+        <button class="btn-mini" id="btnLayoutGrid" onclick="setWeekLayout('grid')">Таблица 2×4</button>
+      </div>
+    </div>
+
+    <!-- Корзина -->
+    <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:15px; font-weight:500;">Корзина удаленных задач</span>
       <button class="btn-mini" onclick="closeFunctionsModal(); setView('trash');" id="trashMenuBtn">Открыть (0) 🗑</button>
     </div>
 
+    <!-- Темная тема -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Темная тема</span>
       <button class="btn-mini" onclick="toggleTheme()">Переключить ◐</button>
     </div>
 
+    <!-- Сброс кеша -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Обновить версию (сброс кеша)</span>
       <button class="btn-mini" onclick="forceUpdateApp()">Обновить ↻</button>
     </div>
 
+    <!-- Категории Доходов и Расходов -->
+    <div class="menu-section">
+      <label class="form-label" style="font-weight:600; color:var(--text);">Категории финансов (Доходы и Расходы)</label>
+      <div id="finCategoriesManager" style="margin:6px 0;"></div>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <input type="text" id="newFinCatInput" class="form-input" placeholder="Новая категория..." style="flex:1; padding:6px 8px; font-size:14px;">
+        <select id="newFinCatType" class="form-select" style="width:115px; padding:6px; font-size:13px;">
+          <option value="income">+ Доход</option>
+          <option value="expense">− Расход</option>
+        </select>
+        <button class="btn-mini" onclick="addFinanceCategory()">+</button>
+      </div>
+    </div>
+
+    <!-- Названия цветов для поиска -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Названия цветов (для фильтра в поиске)</label>
       <div id="colorLabelsEditor" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;"></div>
     </div>
 
+    <!-- Повторяющиеся задачи -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Повторяющиеся задачи (шаблоны)</label>
       <div id="recurringList" style="margin:6px 0;"></div>
@@ -878,8 +1072,9 @@
       </div>
     </div>
 
+    <!-- Резервная копия -->
     <div class="menu-section">
-      <label class="form-label" style="font-weight:600; color:var(--text);">Резервная копия (JSON)</label>
+      <label class="form-label" style="font-weight:600; color:var(--text);">Резервная копия (Задачи + Финансы + Настройки)</label>
       <div style="display:flex; gap:8px; margin-top:8px;">
         <button class="btn-mini" onclick="exportJSON()" style="flex:1; padding:9px;">Скачать бэкап</button>
         <button class="btn-mini" onclick="document.getElementById('importFile').click()" style="flex:1; padding:9px;">Загрузить файл</button>
@@ -908,6 +1103,7 @@
 
   const STORAGE_KEY = 'tweek_cal_tasks_v1';
   const CONFIG_KEY = 'tweek_cal_config_v1';
+  const FIN_KEY = 'tweek_cal_finances_v1';
 
   const PALETTE = [
     { id: 'none',   css: 'transparent',       defaultName: 'Без цвета' },
@@ -929,11 +1125,22 @@
   };
 
   let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{"theme":"light","recurring":[],"colorNames":{}}');
+  let finances = JSON.parse(localStorage.getItem(FIN_KEY) || '[]');
+  let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
+
+  if (!config.theme) config.theme = 'light';
+  if (!config.weekLayout) config.weekLayout = 'list'; // 'list' | 'grid'
   if (!Array.isArray(config.recurring)) config.recurring = [];
   if (!config.colorNames) config.colorNames = {};
+  if (!config.dayMarks) config.dayMarks = {}; // { 'YYYY-MM-DD': { color: 'mint', label: 'ВЫХ' } }
+  if (!config.finCategories) {
+    config.finCategories = {
+      income: ['Зарплата', 'Подработка'],
+      expense: ['Продукты', 'Дом', 'Разное']
+    };
+  }
 
-  let currentView = 'week'; // 'week' | 'month' | 'day' | 'all' | 'trash'
+  let currentView = 'week'; // 'week' | 'month' | 'day' | 'all' | 'trash' | 'finance'
   let lastCalendarView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
@@ -946,6 +1153,14 @@
 
   let lastDeletedTaskId = null;
   let undoTimeout = null;
+
+  // Переменные для отметки дня в месяце
+  let markingDateStr = null;
+  let markingColor = 'none';
+
+  // Переменные для вкладки Финансов
+  let quickFinType = 'income';
+  let editingFinId = null;
 
   tasks.forEach((t, idx) => {
     if (typeof t.order !== 'number') t.order = (idx + 1) * 1000;
@@ -990,6 +1205,11 @@
     return timeStr ? `${shortD} ${timeStr}` : shortD;
   }
 
+  function formatMoney(num) {
+    const n = Number(num) || 0;
+    return n.toLocaleString('ru-RU');
+  }
+
   function getMonday(d) {
     const copy = new Date(d);
     const day = copy.getDay();
@@ -1000,6 +1220,10 @@
   function saveConfig() { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); }
   function saveTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    render();
+  }
+  function saveFinances() {
+    localStorage.setItem(FIN_KEY, JSON.stringify(finances));
     render();
   }
 
@@ -1095,6 +1319,139 @@
     if (revealedCreatedIds.has(id)) revealedCreatedIds.delete(id);
     else revealedCreatedIds.add(id);
     render();
+  }
+
+  // --- ОТМЕТКА И ПОКРАСКА СТРОКИ ДНЯ В МЕСЯЦЕ (ЦВЕТ + 3 БУКВЫ) ---
+  function openDayMarkModal(dateStr) {
+    markingDateStr = dateStr;
+    const current = config.dayMarks[dateStr] || { color: 'none', label: '' };
+    markingColor = current.color || 'none';
+    document.getElementById('dayMarkModalTitle').textContent = `Отметить день: ${dateStr}`;
+    document.getElementById('dayMarkLabelInput').value = current.label || '';
+    renderDayMarkColorPicker();
+    document.getElementById('dayMarkModal').classList.add('open');
+  }
+
+  function renderDayMarkColorPicker() {
+    document.getElementById('dayMarkColorPicker').innerHTML = PALETTE.map(p => `
+      <div class="color-Swatch ${markingColor === p.id ? 'selected' : ''}" 
+           style="background:${p.id === 'none' ? 'var(--surface-2)' : p.css}"
+           onclick="selectDayMarkColor('${p.id}')">${p.id === 'none' ? '✕' : ''}</div>
+    `).join('');
+  }
+
+  function selectDayMarkColor(cId) {
+    markingColor = cId;
+    renderDayMarkColorPicker();
+  }
+
+  function closeDayMarkModal() {
+    if (markingDateStr) {
+      const label = document.getElementById('dayMarkLabelInput').value.trim().slice(0, 3).toUpperCase();
+      if (markingColor === 'none' && !label) {
+        delete config.dayMarks[markingDateStr];
+      } else {
+        config.dayMarks[markingDateStr] = { color: markingColor, label };
+      }
+      saveConfig();
+      render();
+    }
+    markingDateStr = null;
+    document.getElementById('dayMarkModal').classList.remove('open');
+  }
+
+  function clearDayMark() {
+    if (markingDateStr) {
+      delete config.dayMarks[markingDateStr];
+      saveConfig();
+      render();
+    }
+    markingDateStr = null;
+    document.getElementById('dayMarkModal').classList.remove('open');
+  }
+
+  // --- ФИНАНСЫ (ДОХОДЫ, РАСХОДЫ, КАТЕГОРИИ, ДЕТАЛИ) ---
+  function setQuickFinType(type) {
+    quickFinType = type;
+    render();
+  }
+
+  function addFinEntry(dateStr) {
+    const amtEl = document.getElementById('quickFinAmount');
+    const catEl = document.getElementById('quickFinCategory');
+    const noteEl = document.getElementById('quickFinNote');
+    if (!amtEl) return;
+    const amount = parseFloat(amtEl.value);
+    if (!amount || amount <= 0) return;
+
+    const listCats = config.finCategories[quickFinType] || [];
+    const category = (catEl && catEl.value) ? catEl.value : (listCats[0] || (quickFinType === 'income' ? 'Доход' : 'Расход'));
+    const notes = noteEl ? noteEl.value.trim() : '';
+    const nowTs = Date.now();
+
+    finances.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(nowTs + Math.random()),
+      date: dateStr,
+      type: quickFinType,
+      amount,
+      category,
+      notes,
+      createdAt: nowTs,
+      updatedAt: nowTs
+    });
+
+    amtEl.value = '';
+    if (noteEl) noteEl.value = '';
+    saveFinances();
+  }
+
+  function openFinModal(id) {
+    const item = finances.find(x => x.id === id);
+    if (!item) return;
+    editingFinId = id;
+    document.getElementById('editFinType').value = item.type || 'income';
+    populateEditFinCategories(item.category);
+    document.getElementById('editFinAmount').value = item.amount;
+    document.getElementById('editFinDate').value = item.date;
+    document.getElementById('editFinNotes').value = item.notes || '';
+    document.getElementById('editFinCreatedInfo').textContent = `Создано: ${formatDateTimeStamp(item.createdAt || item.updatedAt)}`;
+    document.getElementById('finModal').classList.add('open');
+  }
+
+  function populateEditFinCategories(selectedCat) {
+    const type = document.getElementById('editFinType').value;
+    const cats = [...(config.finCategories[type] || [])];
+    if (selectedCat && !cats.includes(selectedCat)) cats.push(selectedCat);
+    if (!cats.length) cats.push(type === 'income' ? 'Доход' : 'Расход');
+    const sel = document.getElementById('editFinCategory');
+    sel.innerHTML = cats.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('');
+    if (selectedCat) sel.value = selectedCat;
+  }
+
+  function closeFinModal() {
+    if (editingFinId) {
+      const item = finances.find(x => x.id === editingFinId);
+      if (item) {
+        const amt = parseFloat(document.getElementById('editFinAmount').value);
+        if (amt && amt > 0) item.amount = amt;
+        item.type = document.getElementById('editFinType').value;
+        item.category = document.getElementById('editFinCategory').value;
+        item.date = document.getElementById('editFinDate').value || item.date;
+        item.notes = document.getElementById('editFinNotes').value;
+        item.updatedAt = Date.now();
+        saveFinances();
+      }
+    }
+    editingFinId = null;
+    document.getElementById('finModal').classList.remove('open');
+  }
+
+  function deleteActiveFin() {
+    if (!editingFinId) return;
+    finances = finances.filter(x => x.id !== editingFinId);
+    editingFinId = null;
+    document.getElementById('finModal').classList.remove('open');
+    saveFinances();
   }
 
   // --- КОРЗИНА И ОТМЕНА УДАЛЕНИЯ ---
@@ -1299,6 +1656,9 @@
   function openFunctionsModal() {
     const trashCount = tasks.filter(t => t.deleted).length;
     document.getElementById('trashMenuBtn').textContent = `Открыть (${trashCount}) 🗑`;
+    document.getElementById('btnLayoutList').classList.toggle('active', config.weekLayout !== 'grid');
+    document.getElementById('btnLayoutGrid').classList.toggle('active', config.weekLayout === 'grid');
+    renderFinCategoriesManager();
     renderRecurringList();
     renderColorLabelsEditor();
     document.getElementById('functionsModal').classList.add('open');
@@ -1306,6 +1666,51 @@
   function closeFunctionsModal() {
     document.getElementById('functionsModal').classList.remove('open');
     render();
+  }
+
+  function setWeekLayout(mode) {
+    config.weekLayout = mode;
+    saveConfig();
+    document.getElementById('btnLayoutList').classList.toggle('active', mode !== 'grid');
+    document.getElementById('btnLayoutGrid').classList.toggle('active', mode === 'grid');
+    render();
+  }
+
+  function renderFinCategoriesManager() {
+    const box = document.getElementById('finCategoriesManager');
+    const inc = config.finCategories.income || [];
+    const exp = config.finCategories.expense || [];
+
+    box.innerHTML = `
+      <div style="font-size:12px; margin-bottom:4px;"><strong class="fin-inc">+ Доходы:</strong> ${
+        inc.map((c, i) => `<span style="display:inline-flex; align-items:center; gap:3px; background:var(--surface-2); padding:2px 7px; border-radius:6px; margin:2px;">${escapeHTML(c)} <b style="cursor:pointer; color:var(--muted)" onclick="removeFinCategory('income',${i})">×</b></span>`).join('') || 'нет'
+      }</div>
+      <div style="font-size:12px;"><strong class="fin-exp">− Расходы:</strong> ${
+        exp.map((c, i) => `<span style="display:inline-flex; align-items:center; gap:3px; background:var(--surface-2); padding:2px 7px; border-radius:6px; margin:2px;">${escapeHTML(c)} <b style="cursor:pointer; color:var(--muted)" onclick="removeFinCategory('expense',${i})">×</b></span>`).join('') || 'нет'
+      }</div>
+    `;
+  }
+
+  function addFinanceCategory() {
+    const inp = document.getElementById('newFinCatInput');
+    const type = document.getElementById('newFinCatType').value;
+    const name = inp.value.trim();
+    if (!name) return;
+    if (!config.finCategories[type]) config.finCategories[type] = [];
+    if (!config.finCategories[type].includes(name)) {
+      config.finCategories[type].push(name);
+      saveConfig();
+    }
+    inp.value = '';
+    renderFinCategoriesManager();
+  }
+
+  function removeFinCategory(type, idx) {
+    if (config.finCategories[type]) {
+      config.finCategories[type].splice(idx, 1);
+      saveConfig();
+      renderFinCategoriesManager();
+    }
   }
 
   function renderColorLabelsEditor() {
@@ -1359,27 +1764,22 @@
   }
 
   function setView(v) {
-    if (v !== 'all' && v !== 'trash') lastCalendarView = v;
+    if (v === 'week' || v === 'month' || v === 'day') lastCalendarView = v;
     currentView = v;
 
     document.getElementById('btnWeek').classList.toggle('active', v === 'week');
     document.getElementById('btnMonth').classList.toggle('active', v === 'month');
     document.getElementById('btnDay').classList.toggle('active', v === 'day');
     document.getElementById('btnSearch').classList.toggle('active', v === 'all');
+    document.getElementById('btnFinance').classList.toggle('active', v === 'finance');
 
     const wrap = document.getElementById('searchWrap');
-    const somedayBox = document.getElementById('somedayContainer');
     const sb = document.getElementById('searchInput');
 
     if (v === 'all') {
       wrap.classList.add('open');
-      somedayBox.style.display = 'none';
-    } else if (v === 'trash') {
-      wrap.classList.remove('open');
-      somedayBox.style.display = 'none';
     } else {
       wrap.classList.remove('open');
-      somedayBox.style.display = 'block';
       sb.value = '';
       activeColorFilter = 'all';
       activeStatusFilter = 'all';
@@ -1388,17 +1788,19 @@
   }
 
   function toggleAllTasksView() {
-    if (currentView === 'all') {
-      setView(lastCalendarView || 'week');
-    } else {
-      setView('all');
-    }
+    if (currentView === 'all') setView(lastCalendarView || 'week');
+    else setView('all');
+  }
+
+  function toggleFinanceView() {
+    if (currentView === 'finance') setView(lastCalendarView || 'week');
+    else setView('finance');
   }
 
   function shiftPeriod(dir) {
     if (currentView === 'all' || currentView === 'trash') setView(lastCalendarView || 'week');
     if (currentView === 'week') anchorDate.setDate(anchorDate.getDate() + dir * 7);
-    else if (currentView === 'month') anchorDate.setMonth(anchorDate.getMonth() + dir);
+    else if (currentView === 'month' || currentView === 'finance') anchorDate.setMonth(anchorDate.getMonth() + dir);
     else {
       anchorDate.setDate(anchorDate.getDate() + dir);
       selectedDateStr = toISODate(anchorDate);
@@ -1420,7 +1822,8 @@
   }
 
   function exportJSON() {
-    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+    const fullBackup = { tasks, finances, config };
+    const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `tweekcal-backup-${toISODate(new Date())}.json`;
@@ -1434,7 +1837,17 @@
     reader.onload = ev => {
       try {
         const imported = JSON.parse(ev.target.result);
-        if (Array.isArray(imported)) { tasks = imported; saveTasks(); closeFunctionsModal(); }
+        if (Array.isArray(imported)) {
+          tasks = imported;
+        } else if (imported && typeof imported === 'object') {
+          if (Array.isArray(imported.tasks)) tasks = imported.tasks;
+          if (Array.isArray(imported.finances)) finances = imported.finances;
+          if (imported.config) config = { ...config, ...imported.config };
+        }
+        saveConfig();
+        saveFinances();
+        saveTasks();
+        closeFunctionsModal();
       } catch (err) { alert('Ошибка чтения файла бэкапа'); }
     };
     reader.readAsText(file);
@@ -1508,12 +1921,23 @@
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
 
+    const somedayBox = document.getElementById('somedayContainer');
+    const hideBottomSomeday =
+      currentView === 'all' ||
+      currentView === 'trash' ||
+      currentView === 'finance' ||
+      (currentView === 'week' && config.weekLayout === 'grid');
+    somedayBox.style.display = hideBottomSomeday ? 'none' : 'block';
+
     if (currentView === 'all') {
       document.getElementById('headerTitle').textContent = 'Поиск и задачи';
       document.getElementById('weekRangeBadge').textContent = `${visibleTasks.length}`;
     } else if (currentView === 'trash') {
       document.getElementById('headerTitle').textContent = 'Корзина';
       document.getElementById('weekRangeBadge').textContent = `${deletedTasks.length}`;
+    } else if (currentView === 'finance') {
+      document.getElementById('headerTitle').textContent = `${MONTHS_RU[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
+      document.getElementById('weekRangeBadge').textContent = 'Финансы';
     } else {
       document.getElementById('headerTitle').textContent = MONTHS_RU[anchorDate.getMonth()];
       document.getElementById('weekRangeBadge').textContent = `${monday.getDate()}–${sunday.getDate()}`;
@@ -1521,7 +1945,7 @@
 
     const main = document.getElementById('mainView');
 
-    // ЭКРАН КОРЗИНЫ
+    // 1. ЭКРАН КОРЗИНЫ
     if (currentView === 'trash') {
       main.innerHTML = `
         <div class="day-block" style="border-bottom:none; padding-top:4px;">
@@ -1552,6 +1976,7 @@
       return;
     }
 
+    // 2. ЭКРАН ПОИСКА И ВСЕХ ЗАДАЧ
     if (currentView === 'all') {
       renderSearchFilters();
       const sortedAll = [...visibleTasks].sort((a, b) => {
@@ -1576,20 +2001,132 @@
       return;
     }
 
+    // 3. ЭКРАН ФИНАНСОВ (Сетка месяца + Сумма за месяц + Доходы/Расходы по категориям)
+    if (currentView === 'finance') {
+      const year = anchorDate.getFullYear();
+      const month = anchorDate.getMonth();
+      const monthPrefix = `${year}-${('0' + (month + 1)).slice(-2)}-`;
+
+      const monthEntries = finances.filter(f => (f.date || '').startsWith(monthPrefix));
+      const totalInc = monthEntries.filter(f => f.type === 'income').reduce((s, f) => s + (Number(f.amount) || 0), 0);
+      const totalExp = monthEntries.filter(f => f.type === 'expense').reduce((s, f) => s + (Number(f.amount) || 0), 0);
+      const net = totalInc - totalExp;
+
+      const firstDay = new Date(year, month, 1);
+      const startOffset = (firstDay.getDay() + 6) % 7;
+      const startDate = new Date(year, month, 1 - startOffset);
+
+      let finHtml = `
+        <div class="finance-summary-card">
+          <div>
+            <span class="fin-stat-label">Доходы</span>
+            <span class="fin-stat-val fin-inc">+${formatMoney(totalInc)}</span>
+          </div>
+          <div>
+            <span class="fin-stat-label">Расходы</span>
+            <span class="fin-stat-val fin-exp">−${formatMoney(totalExp)}</span>
+          </div>
+          <div>
+            <span class="fin-stat-label">Итого за месяц</span>
+            <span class="fin-stat-val">${net >= 0 ? '+' : ''}${formatMoney(net)}</span>
+          </div>
+        </div>
+        <div class="month-grid">
+      `;
+
+      SHORT_DAYS_RU.forEach(label => finHtml += `<div class="weekday-label">${label}</div>`);
+
+      for (let i = 0; i < 42; i++) {
+        const cur = new Date(startDate);
+        cur.setDate(startDate.getDate() + i);
+        const dateStr = toISODate(cur);
+        const inMonth = cur.getMonth() === month;
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === selectedDateStr;
+
+        const dayFin = finances.filter(f => f.date === dateStr);
+        const dInc = dayFin.filter(f => f.type === 'income').reduce((s, f) => s + (Number(f.amount) || 0), 0);
+        const dExp = dayFin.filter(f => f.type === 'expense').reduce((s, f) => s + (Number(f.amount) || 0), 0);
+        const mark = config.dayMarks[dateStr];
+        const topBarBg = (mark && mark.color && mark.color !== 'none') ? getColorCss(mark.color) : 'transparent';
+
+        finHtml += `
+          <div class="month-cell ${inMonth ? '' : 'other-month'} ${isSelected ? 'selected' : ''}" 
+               onclick="selectMonthDay('${dateStr}')">
+            <div class="cell-top-bar" style="background:${topBarBg}">
+              <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
+              ${mark && mark.label ? `<span class="cell-day-tag">${escapeHTML(mark.label)}</span>` : ''}
+            </div>
+            <div class="cell-body">
+              ${dInc > 0 ? `<div class="cell-pill fin-pill-inc">+${formatMoney(dInc)}</div>` : ''}
+              ${dExp > 0 ? `<div class="cell-pill fin-pill-exp">−${formatMoney(dExp)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      finHtml += `</div>`;
+
+      const selEntries = finances.filter(f => f.date === selectedDateStr);
+      const availCats = config.finCategories[quickFinType] || [];
+
+      finHtml += `
+        <div class="day-block" style="border-bottom:none;">
+          <div class="day-header" style="margin-bottom:8px;">
+            <span class="day-name">Операции за ${selectedDateStr}</span>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-mini ${quickFinType === 'income' ? 'active' : ''}" onclick="setQuickFinType('income')">+ Доход</button>
+              <button class="btn-mini ${quickFinType === 'expense' ? 'active' : ''}" onclick="setQuickFinType('expense')">− Расход</button>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input type="number" inputmode="decimal" id="quickFinAmount" class="form-input" placeholder="Сумма..." style="flex:1; padding:7px 10px;">
+            <select id="quickFinCategory" class="form-select" style="flex:1; padding:7px 8px;">
+              ${availCats.length ? availCats.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('') : `<option value="${quickFinType === 'income' ? 'Доход' : 'Расход'}">${quickFinType === 'income' ? 'Доход' : 'Расход'}</option>`}
+            </select>
+            <button class="btn-mini active" onclick="addFinEntry('${selectedDateStr}')" style="padding:0 14px;">+</button>
+          </div>
+          <input type="text" id="quickFinNote" class="form-input" placeholder="Заметка (необязательно)..." style="padding:6px 10px; font-size:13px; margin-bottom:10px;"
+                 onkeydown="if(event.key==='Enter'){addFinEntry('${selectedDateStr}'); this.blur();}">
+
+          <ul class="task-list">
+            ${selEntries.map(f => `
+              <li class="task-item" onclick="openFinModal('${f.id}')" style="cursor:pointer;">
+                <span class="cell-pill ${f.type === 'income' ? 'fin-pill-inc' : 'fin-pill-exp'}" style="font-size:13px; padding:3px 8px;">
+                  ${f.type === 'income' ? '+' : '−'}${formatMoney(f.amount)}
+                </span>
+                <div class="task-body">
+                  <span class="task-text" style="font-weight:600;">${escapeHTML(f.category)}</span>${f.notes ? `<div class="task-meta"><span>📝 ${escapeHTML(f.notes)}</span></div>` : ''}
+                </div>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+
+      main.innerHTML = finHtml;
+      return;
+    }
+
+    // 4. ЭКРАН НЕДЕЛИ (Список или Таблица 2x4: Слева Пн-Чт, Справа Пт-Когда-нибудь)
     if (currentView === 'week') {
-      let html = '';
+      const SHORT_WEEK_NAMES = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+      const isGrid = config.weekLayout === 'grid';
+      let html = isGrid ? `<div class="week-grid-2x4">` : '';
+
       for (let i = 0; i < 7; i++) {
         const cur = new Date(monday);
         cur.setDate(monday.getDate() + i);
         const dateStr = toISODate(cur);
         const dayTasks = visibleTasks.filter(t => t.date === dateStr);
         const isToday = dateStr === todayStr;
+        const dayTitle = isGrid ? SHORT_WEEK_NAMES[cur.getDay()] : DAYS_RU[cur.getDay()];
 
         html += `
           <div class="day-block" data-drop-date="${dateStr}">
             <div class="day-header">
               <span class="day-name ${isToday ? 'is-today' : ''}" onclick="openDayTimeline('${dateStr}')" style="cursor:pointer">
-                ${DAYS_RU[cur.getDay()]}
+                ${dayTitle}
               </span>
               <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
             </div>
@@ -1600,9 +2137,26 @@
           </div>
         `;
       }
+
+      if (isGrid) {
+        const somedayTasks = visibleTasks.filter(t => !t.date);
+        html += `
+          <div class="day-block" data-drop-date="__SOMEDAY__" style="background:var(--surface-2);">
+            <div class="day-header">
+              <span class="day-name">Когда-нибудь</span>
+            </div>
+            <ul class="task-list" data-list-date="__SOMEDAY__">${somedayTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
+            <input type="text" class="add-input" aria-label="Новая задача"
+                   onkeydown="if(event.key==='Enter'){addTask(null, null, this); this.blur();}"
+                   onblur="addTask(null, null, this)">
+          </div>
+        </div>`;
+      }
+
       main.innerHTML = html;
 
     } else if (currentView === 'month') {
+      // 5. ЭКРАН МЕСЯЦА (с покраской верхней строки числа и 3 буквами)
       const year = anchorDate.getFullYear();
       const month = anchorDate.getMonth();
       const firstDay = new Date(year, month, 1);
@@ -1620,20 +2174,27 @@
         const isToday = dateStr === todayStr;
         const isSelected = dateStr === selectedDateStr;
         const dayTasks = visibleTasks.filter(t => t.date === dateStr);
+        const mark = config.dayMarks[dateStr];
+        const topBarBg = (mark && mark.color && mark.color !== 'none') ? getColorCss(mark.color) : 'transparent';
 
         gridHtml += `
           <div class="month-cell ${inMonth ? '' : 'other-month'} ${isSelected ? 'selected' : ''}" 
                data-drop-date="${dateStr}"
                onclick="selectMonthDay('${dateStr}')">
-            <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
-            ${dayTasks.slice(0, 3).map(t => {
-              const pillBg = (t.color && t.color !== 'none') ? getColorCss(t.color) : 'var(--surface-2)';
-              return `
-                <div class="cell-pill ${t.completed ? 'done' : ''}" style="background:${pillBg}">
-                  ${t.time ? t.time + ' ' : ''}${escapeHTML(t.title)}
-                </div>`;
-            }).join('')}
-            ${dayTasks.length > 3 ? `<div class="cell-pill">+${dayTasks.length - 3}</div>` : ''}
+            <div class="cell-top-bar" style="background:${topBarBg}">
+              <div class="cell-number ${isToday ? 'is-today' : ''}">${cur.getDate()}</div>
+              ${mark && mark.label ? `<span class="cell-day-tag">${escapeHTML(mark.label)}</span>` : ''}
+            </div>
+            <div class="cell-body">
+              ${dayTasks.slice(0, 3).map(t => {
+                const pillBg = (t.color && t.color !== 'none') ? getColorCss(t.color) : 'var(--surface-2)';
+                return `
+                  <div class="cell-pill ${t.completed ? 'done' : ''}" style="background:${pillBg}">
+                    ${t.time ? t.time + ' ' : ''}${escapeHTML(t.title)}
+                  </div>`;
+              }).join('')}
+              ${dayTasks.length > 3 ? `<div class="cell-pill">+${dayTasks.length - 3}</div>` : ''}
+            </div>
           </div>
         `;
       }
@@ -1644,7 +2205,10 @@
         <div class="day-block" data-drop-date="${selectedDateStr}">
           <div class="day-header">
             <span class="day-name">${selectedDateStr}</span>
-            <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
+            <div style="display:flex; gap:6px;">
+              <button class="btn-mini" onclick="openDayMarkModal('${selectedDateStr}')">Отметить день 🎨</button>
+              <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
+            </div>
           </div>
           <ul class="task-list" data-list-date="${selectedDateStr}">${selTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
           <input type="text" class="add-input" aria-label="Новая задача"
@@ -1690,8 +2254,10 @@
       main.innerHTML = html;
     }
 
-    const somedayTasks = visibleTasks.filter(t => !t.date);
-    document.getElementById('somedayList').innerHTML = somedayTasks.map(t => renderTaskItem(t, false)).join('');
+    if (!hideBottomSomeday) {
+      const somedayTasks = visibleTasks.filter(t => !t.date);
+      document.getElementById('somedayList').innerHTML = somedayTasks.map(t => renderTaskItem(t, false)).join('');
+    }
   }
 
   function selectMonthDay(dateStr) {
