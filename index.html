@@ -359,18 +359,18 @@
       stroke-width: 2;
     }
 
-    /* ДНИ И ЗАДАЧИ (СПИСОК И ТАБЛИЦА 2x4) */
+    /* ДНИ И ЗАДАЧИ */
     .day-block {
       padding: 12px 2px 4px 2px;
       border-bottom: 2px solid var(--line);
       transition: background-color 0.15s;
     }
 
-    /* Сетка недели 4 строки × 2 столбца (Слева Пн-Чт, Справа Пт-Когда-нибудь) */
+    /* СЕТКА НЕДЕЛИ 4 строки × 2 столбца (Фиксированная высота + многоточие) */
     .week-grid-2x4 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(4, minmax(115px, auto));
+      grid-template-rows: repeat(4, 138px);
       grid-auto-flow: column;
       border-top: 1.5px solid var(--line);
       border-left: 1.5px solid var(--line);
@@ -382,23 +382,47 @@
       border-right: 1.5px solid var(--line);
       border-bottom: 1.5px solid var(--line);
       min-width: 0;
+      height: 138px;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
+    }
+
+    .week-grid-2x4 .day-block.expanded-cell {
+      overflow-y: auto;
     }
 
     .week-grid-2x4 .day-name { font-size: 13px; }
     .week-grid-2x4 .day-date { font-size: 11px; }
     .week-grid-2x4 .task-item { padding: 4px 1px; font-size: 13px; gap: 5px; }
-    .week-grid-2x4 .checkbox { width: 16px; height: 16px; font-size: 10px; }
-    .week-grid-2x4 .task-text.highlighted { padding: 2px 6px; }
+    .week-grid-2x4 .checkbox { width: 16px; height: 16px; font-size: 10px; flex-shrink: 0; }
+    .week-grid-2x4 .task-body { min-width: 0; overflow: hidden; }
+    
+    /* Запрет переноса текста в таблице 2x4 (многоточие) */
+    .week-grid-2x4 .task-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .week-grid-2x4 .task-text.highlighted { padding: 2px 5px; }
     .week-grid-2x4 .drag-handle { padding: 3px; font-size: 13px; }
     .week-grid-2x4 .add-input { height: 26px; font-size: 13px; margin-top: auto; }
+
+    .grid-more-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 2px 4px;
+      cursor: pointer;
+    }
 
     .day-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
       margin-bottom: 4px;
+      flex-shrink: 0;
     }
 
     .day-name { font-size: 16px; font-weight: 700; }
@@ -540,9 +564,10 @@
       outline: none;
       color: var(--text);
       display: block;
+      flex-shrink: 0;
     }
 
-    /* СЕТКА МЕСЯЦА И ПОКРАСКА СТРОКИ С ЧИСЛОМ */
+    /* СЕТКА МЕСЯЦА */
     .month-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -579,7 +604,6 @@
     .month-cell.other-month { opacity: 0.35; }
     .month-cell.selected { outline: 2px solid var(--today); outline-offset: -2px; z-index: 2; }
 
-    /* Верхняя строка с числом и 3-буквенной меткой (красится целиком) */
     .cell-top-bar {
       display: flex;
       align-items: center;
@@ -638,7 +662,7 @@
     }
     .cell-pill.done { opacity: 0.38; text-decoration: line-through; }
 
-    /* ФИНАНСОВЫЕ СВОДКИ И СТИКЕРЫ В МЕСЯЦЕ */
+    /* ФИНАНСЫ */
     .finance-summary-card {
       background: var(--surface-2);
       border-radius: 12px;
@@ -654,16 +678,8 @@
     .fin-inc { color: var(--inc-color); }
     .fin-exp { color: var(--exp-color); }
 
-    .fin-pill-inc {
-      background: var(--inc-bg);
-      color: var(--inc-color);
-      font-weight: 600;
-    }
-    .fin-pill-exp {
-      background: var(--exp-bg);
-      color: var(--exp-color);
-      font-weight: 600;
-    }
+    .fin-pill-inc { background: var(--inc-bg); color: var(--inc-color); font-weight: 600; }
+    .fin-pill-exp { background: var(--exp-bg); color: var(--exp-color); font-weight: 600; }
 
     /* ТАЙМЛАЙН ДНЯ */
     .timeline-row { display: flex; border-bottom: 1px solid var(--border); min-height: 42px; }
@@ -817,7 +833,7 @@
     </div>
   </header>
 
-  <!-- ПРОКРУЧИВАЕМЫЙ КОНТЕНТ -->
+  <!-- ПРОКРУЧИВАЕМАЯ ОБЛАСТЬ -->
   <main class="scroll-area" id="scrollArea">
     <div class="search-wrap" id="searchWrap">
       <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по тексту или заметкам..." oninput="render()">
@@ -833,7 +849,6 @@
 
     <div id="mainView"></div>
 
-    <!-- Блок Когда-нибудь (показывается, когда неделя в режиме обычного списка) -->
     <div class="someday-box" id="somedayContainer" data-drop-date="__SOMEDAY__">
       <div class="day-header">
         <span class="day-name">Когда-нибудь</span>
@@ -854,7 +869,6 @@
 
   <!-- НИЖНЯЯ ПАНЕЛЬ -->
   <nav class="bottom-bar">
-    <!-- Кнопка "Финансы" слева в углу -->
     <button class="corner-trigger-btn left" id="btnFinance" onclick="toggleFinanceView()" title="Доходы и расходы">
       ₽
     </button>
@@ -880,7 +894,6 @@
       </button>
     </div>
 
-    <!-- Кнопка "Поиск / Все задачи" справа в углу -->
     <button class="corner-trigger-btn right" id="btnSearch" onclick="toggleAllTasksView()" title="Все задачи и поиск">
       <svg viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="7"/>
@@ -1010,7 +1023,6 @@
       <button class="btn-mini" onclick="closeFunctionsModal()">Закрыть</button>
     </div>
 
-    <!-- Настройка вида недели: Список или Таблица 2x4 -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Вид вкладки «Неделя»</span>
       <div style="display:flex; gap:4px;">
@@ -1019,25 +1031,21 @@
       </div>
     </div>
 
-    <!-- Корзина -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Корзина удаленных задач</span>
       <button class="btn-mini" onclick="closeFunctionsModal(); setView('trash');" id="trashMenuBtn">Открыть (0) 🗑</button>
     </div>
 
-    <!-- Темная тема -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Темная тема</span>
       <button class="btn-mini" onclick="toggleTheme()">Переключить ◐</button>
     </div>
 
-    <!-- Сброс кеша -->
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Обновить версию (сброс кеша)</span>
       <button class="btn-mini" onclick="forceUpdateApp()">Обновить ↻</button>
     </div>
 
-    <!-- Категории Доходов и Расходов -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Категории финансов (Доходы и Расходы)</label>
       <div id="finCategoriesManager" style="margin:6px 0;"></div>
@@ -1051,13 +1059,11 @@
       </div>
     </div>
 
-    <!-- Названия цветов для поиска -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Названия цветов (для фильтра в поиске)</label>
       <div id="colorLabelsEditor" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;"></div>
     </div>
 
-    <!-- Повторяющиеся задачи -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Повторяющиеся задачи (шаблоны)</label>
       <div id="recurringList" style="margin:6px 0;"></div>
@@ -1072,7 +1078,6 @@
       </div>
     </div>
 
-    <!-- Резервная копия -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Резервная копия (Задачи + Финансы + Настройки)</label>
       <div style="display:flex; gap:8px; margin-top:8px;">
@@ -1129,10 +1134,10 @@
   let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
 
   if (!config.theme) config.theme = 'light';
-  if (!config.weekLayout) config.weekLayout = 'list'; // 'list' | 'grid'
+  if (!config.weekLayout) config.weekLayout = 'list';
   if (!Array.isArray(config.recurring)) config.recurring = [];
   if (!config.colorNames) config.colorNames = {};
-  if (!config.dayMarks) config.dayMarks = {}; // { 'YYYY-MM-DD': { color: 'mint', label: 'ВЫХ' } }
+  if (!config.dayMarks) config.dayMarks = {};
   if (!config.finCategories) {
     config.finCategories = {
       income: ['Зарплата', 'Подработка'],
@@ -1140,7 +1145,7 @@
     };
   }
 
-  let currentView = 'week'; // 'week' | 'month' | 'day' | 'all' | 'trash' | 'finance'
+  let currentView = 'week';
   let lastCalendarView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
@@ -1154,11 +1159,9 @@
   let lastDeletedTaskId = null;
   let undoTimeout = null;
 
-  // Переменные для отметки дня в месяце
   let markingDateStr = null;
   let markingColor = 'none';
 
-  // Переменные для вкладки Финансов
   let quickFinType = 'income';
   let editingFinId = null;
 
@@ -1321,7 +1324,6 @@
     render();
   }
 
-  // --- ОТМЕТКА И ПОКРАСКА СТРОКИ ДНЯ В МЕСЯЦЕ (ЦВЕТ + 3 БУКВЫ) ---
   function openDayMarkModal(dateStr) {
     markingDateStr = dateStr;
     const current = config.dayMarks[dateStr] || { color: 'none', label: '' };
@@ -1370,7 +1372,6 @@
     document.getElementById('dayMarkModal').classList.remove('open');
   }
 
-  // --- ФИНАНСЫ (ДОХОДЫ, РАСХОДЫ, КАТЕГОРИИ, ДЕТАЛИ) ---
   function setQuickFinType(type) {
     quickFinType = type;
     render();
@@ -1454,7 +1455,6 @@
     saveFinances();
   }
 
-  // --- КОРЗИНА И ОТМЕНА УДАЛЕНИЯ ---
   function showUndoToast(taskId) {
     lastDeletedTaskId = taskId;
     const toast = document.getElementById('undoToast');
@@ -1501,7 +1501,6 @@
     }
   }
 
-  // --- ФИЛЬТРЫ В ПОИСКЕ ---
   function renderSearchFilters() {
     const bar = document.getElementById('colorFilterBar');
     const allBtn = `
@@ -1531,7 +1530,6 @@
     render();
   }
 
-  // --- МОДАЛКА ДЕТАЛЕЙ ЗАДАЧИ ---
   function openTaskModal(id) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
@@ -1652,7 +1650,6 @@
     document.getElementById('taskModal').classList.remove('open');
   }
 
-  // --- МОДАЛКА ФУНКЦИЙ ---
   function openFunctionsModal() {
     const trashCount = tasks.filter(t => t.deleted).length;
     document.getElementById('trashMenuBtn').textContent = `Открыть (${trashCount}) 🗑`;
@@ -1945,7 +1942,6 @@
 
     const main = document.getElementById('mainView');
 
-    // 1. ЭКРАН КОРЗИНЫ
     if (currentView === 'trash') {
       main.innerHTML = `
         <div class="day-block" style="border-bottom:none; padding-top:4px;">
@@ -1976,7 +1972,6 @@
       return;
     }
 
-    // 2. ЭКРАН ПОИСКА И ВСЕХ ЗАДАЧ
     if (currentView === 'all') {
       renderSearchFilters();
       const sortedAll = [...visibleTasks].sort((a, b) => {
@@ -2001,7 +1996,6 @@
       return;
     }
 
-    // 3. ЭКРАН ФИНАНСОВ (Сетка месяца + Сумма за месяц + Доходы/Расходы по категориям)
     if (currentView === 'finance') {
       const year = anchorDate.getFullYear();
       const month = anchorDate.getMonth();
@@ -2108,10 +2102,19 @@
       return;
     }
 
-    // 4. ЭКРАН НЕДЕЛИ (Список или Таблица 2x4: Слева Пн-Чт, Справа Пт-Когда-нибудь)
     if (currentView === 'week') {
       const SHORT_WEEK_NAMES = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
       const isGrid = config.weekLayout === 'grid';
+      const MAX_GRID_TASKS = 2;
+      window.expandedGridCells = window.expandedGridCells || new Set();
+
+      window.toggleGridCellExpand = function(key, ev) {
+        ev.stopPropagation();
+        if (window.expandedGridCells.has(key)) window.expandedGridCells.delete(key);
+        else window.expandedGridCells.add(key);
+        render();
+      };
+
       let html = isGrid ? `<div class="week-grid-2x4">` : '';
 
       for (let i = 0; i < 7; i++) {
@@ -2122,15 +2125,21 @@
         const isToday = dateStr === todayStr;
         const dayTitle = isGrid ? SHORT_WEEK_NAMES[cur.getDay()] : DAYS_RU[cur.getDay()];
 
+        const isExpanded = window.expandedGridCells.has(dateStr);
+        const shownTasks = (isGrid && !isExpanded) ? dayTasks.slice(0, MAX_GRID_TASKS) : dayTasks;
+        const hiddenCount = dayTasks.length - shownTasks.length;
+
         html += `
-          <div class="day-block" data-drop-date="${dateStr}">
+          <div class="day-block ${isExpanded ? 'expanded-cell' : ''}" data-drop-date="${dateStr}">
             <div class="day-header">
               <span class="day-name ${isToday ? 'is-today' : ''}" onclick="openDayTimeline('${dateStr}')" style="cursor:pointer">
                 ${dayTitle}
               </span>
               <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
             </div>
-            <ul class="task-list" data-list-date="${dateStr}">${dayTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
+            <ul class="task-list" data-list-date="${dateStr}">${shownTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
+            ${(isGrid && hiddenCount > 0) ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('${dateStr}', event)">+${hiddenCount} ещё</div>` : ''}
+            ${(isGrid && isExpanded && dayTasks.length > MAX_GRID_TASKS) ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('${dateStr}', event)">Свернуть ▲</div>` : ''}
             <input type="text" class="add-input" aria-label="Новая задача"
                    onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
                    onblur="addTask('${dateStr}', null, this)">
@@ -2140,12 +2149,18 @@
 
       if (isGrid) {
         const somedayTasks = visibleTasks.filter(t => !t.date);
+        const isExpanded = window.expandedGridCells.has('__SOMEDAY__');
+        const shownSomeday = isExpanded ? somedayTasks : somedayTasks.slice(0, MAX_GRID_TASKS);
+        const hiddenSomeday = somedayTasks.length - shownSomeday.length;
+
         html += `
-          <div class="day-block" data-drop-date="__SOMEDAY__" style="background:var(--surface-2);">
+          <div class="day-block ${isExpanded ? 'expanded-cell' : ''}" data-drop-date="__SOMEDAY__" style="background:var(--surface-2);">
             <div class="day-header">
               <span class="day-name">Когда-нибудь</span>
             </div>
-            <ul class="task-list" data-list-date="__SOMEDAY__">${somedayTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
+            <ul class="task-list" data-list-date="__SOMEDAY__">${shownSomeday.map(t => renderTaskItem(t, false)).join('')}</ul>
+            ${hiddenSomeday > 0 ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('__SOMEDAY__', event)">+${hiddenSomeday} ещё</div>` : ''}
+            ${(isExpanded && somedayTasks.length > MAX_GRID_TASKS) ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('__SOMEDAY__', event)">Свернуть ▲</div>` : ''}
             <input type="text" class="add-input" aria-label="Новая задача"
                    onkeydown="if(event.key==='Enter'){addTask(null, null, this); this.blur();}"
                    onblur="addTask(null, null, this)">
@@ -2156,7 +2171,6 @@
       main.innerHTML = html;
 
     } else if (currentView === 'month') {
-      // 5. ЭКРАН МЕСЯЦА (с покраской верхней строки числа и 3 буквами)
       const year = anchorDate.getFullYear();
       const month = anchorDate.getMonth();
       const firstDay = new Date(year, month, 1);
