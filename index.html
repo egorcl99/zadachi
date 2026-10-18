@@ -45,7 +45,7 @@
       --accent-text: #000000;
       --today: #ff453a;
 
-      /* Приглушенная пастельная палитра для Темной темы (читаемый светлый текст) */
+      /* Приглушенная пастельная палитра для Темной темы */
       --hl-yellow: #5c4d16;
       --hl-peach:  #61371e;
       --hl-pink:   #5e243a;
@@ -183,7 +183,7 @@
       margin: 0 auto;
     }
 
-    /* ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ (ЦВЕТА + СТАТУС) */
+    /* ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ */
     .search-wrap {
       padding: 6px 0 12px 0;
       display: none;
@@ -386,13 +386,8 @@
       transition: transform 0.18s ease, opacity 0.15s ease;
     }
 
-    .task-item.done {
-      opacity: 0.48;
-    }
-
-    .task-item.done .task-text {
-      text-decoration: line-through;
-    }
+    .task-item.done { opacity: 0.48; }
+    .task-item.done .task-text { text-decoration: line-through; }
 
     .task-item.dragging-placeholder {
       opacity: 0.25;
@@ -425,7 +420,6 @@
       cursor: pointer;
     }
 
-    /* Пастельное выделение текста задачи целиком (эффект маркера Tweek) */
     .task-text {
       display: inline-block;
       word-break: break-word;
@@ -499,7 +493,6 @@
       background-color: rgba(255, 59, 48, 0.04) !important;
     }
 
-    /* Чистая пустая строка для ввода новой задачи (без текста "+ Добавить задачу") */
     .add-input {
       width: 100%;
       border: none;
@@ -588,6 +581,43 @@
       background: var(--surface-2);
       padding: 14px;
       border-radius: 12px;
+    }
+
+    /* ВСПЛЫВАЮЩАЯ ПЛАШКА ОТМЕНЫ УДАЛЕНИЯ (UNDO TOAST) */
+    .undo-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 56px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent);
+      color: var(--accent-text);
+      padding: 9px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 150;
+      white-space: nowrap;
+    }
+    .undo-toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .undo-btn {
+      background: transparent;
+      border: none;
+      color: #ff9500;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px 4px;
     }
 
     /* МОДАЛЬНЫЕ ШТОРКИ */
@@ -690,7 +720,6 @@
 
   <!-- ПРОКРУЧИВАЕМЫЙ КОНТЕНТ -->
   <main class="scroll-area" id="scrollArea">
-    <!-- Панель поиска и фильтрации по пастельным цветам и статусу -->
     <div class="search-wrap" id="searchWrap">
       <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по тексту или заметкам..." oninput="render()">
       <div class="filter-row">
@@ -705,7 +734,7 @@
 
     <div id="mainView"></div>
 
-    <!-- Блок Когда-нибудь (без текстовых подсказок на пустых строках) -->
+    <!-- Блок Когда-нибудь -->
     <div class="someday-box" id="somedayContainer" data-drop-date="__SOMEDAY__">
       <div class="day-header">
         <span class="day-name">Когда-нибудь</span>
@@ -717,6 +746,12 @@
              onblur="addTask(null, null, this)">
     </div>
   </main>
+
+  <!-- ВСПЛЫВАЮЩАЯ ПЛАШКА ОТМЕНЫ УДАЛЕНИЯ -->
+  <div class="undo-toast" id="undoToast">
+    <span>Перемещено в корзину</span>
+    <button class="undo-btn" onclick="undoLastDelete()">Отменить</button>
+  </div>
 
   <!-- НИЖНЯЯ ПАНЕЛЬ -->
   <nav class="bottom-bar">
@@ -795,7 +830,7 @@
     <div id="editCreatedInfo" style="font-size:11px; color:var(--muted); margin-bottom:12px;"></div>
     <div style="display:flex; justify-content:space-between; margin-top:8px;">
       <button class="btn-mini" onclick="setEditDateToSomeday()">В «Когда-нибудь»</button>
-      <button class="btn-mini" onclick="deleteActiveTask()" style="color:#ff3b30;">Удалить</button>
+      <button class="btn-mini" onclick="deleteActiveTask()" style="color:#ff3b30;">В корзину 🗑</button>
     </div>
   </div>
 </div>
@@ -808,6 +843,12 @@
       <button class="btn-mini" onclick="closeFunctionsModal()">Закрыть</button>
     </div>
 
+    <!-- КОРЗИНА УДАЛЕННЫХ ЗАПИСЕЙ -->
+    <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:15px; font-weight:500;">Корзина удаленных записей</span>
+      <button class="btn-mini" onclick="closeFunctionsModal(); setView('trash');" id="trashMenuBtn">Открыть (0) 🗑</button>
+    </div>
+
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Темная тема</span>
       <button class="btn-mini" onclick="toggleTheme()">Переключить ◐</button>
@@ -818,13 +859,11 @@
       <button class="btn-mini" onclick="forceUpdateApp()">Обновить ↻</button>
     </div>
 
-    <!-- Подписи к пастельным цветам для удобного поиска -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Названия цветов (для фильтра в поиске)</label>
       <div id="colorLabelsEditor" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;"></div>
     </div>
 
-    <!-- Повторяющиеся задачи -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Повторяющиеся задачи (шаблоны)</label>
       <div id="recurringList" style="margin:6px 0;"></div>
@@ -839,7 +878,6 @@
       </div>
     </div>
 
-    <!-- Резервная копия -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Резервная копия (JSON)</label>
       <div style="display:flex; gap:8px; margin-top:8px;">
@@ -871,18 +909,16 @@
   const STORAGE_KEY = 'tweek_cal_tasks_v1';
   const CONFIG_KEY = 'tweek_cal_config_v1';
 
-  // Пастельные цвета (привязаны к CSS-переменным для поддержки светлой и темной темы)
   const PALETTE = [
-    { id: 'none',   css: 'transparent' },
-    { id: 'yellow', css: 'var(--hl-yellow)' },
-    { id: 'peach',  css: 'var(--hl-peach)' },
-    { id: 'pink',   css: 'var(--hl-pink)' },
-    { id: 'lilac',  css: 'var(--hl-lilac)' },
-    { id: 'blue',   css: 'var(--hl-blue)' },
-    { id: 'mint',   css: 'var(--hl-mint)' }
+    { id: 'none',   css: 'transparent',       defaultName: 'Без цвета' },
+    { id: 'yellow', css: 'var(--hl-yellow)',  defaultName: 'Лимонный' },
+    { id: 'peach',  css: 'var(--hl-peach)',   defaultName: 'Персиковый' },
+    { id: 'pink',   css: 'var(--hl-pink)',    defaultName: 'Розовый' },
+    { id: 'lilac',  css: 'var(--hl-lilac)',   defaultName: 'Лавандовый' },
+    { id: 'blue',   css: 'var(--hl-blue)',    defaultName: 'Голубой' },
+    { id: 'mint',   css: 'var(--hl-mint)',    defaultName: 'Мятный' }
   ];
 
-  // Конвертация старых резких цветов в новые пастельные ID
   const LEGACY_COLOR_MAP = {
     'transparent': 'none',
     '#ff3b30': 'pink',
@@ -897,7 +933,7 @@
   if (!Array.isArray(config.recurring)) config.recurring = [];
   if (!config.colorNames) config.colorNames = {};
 
-  let currentView = 'week';
+  let currentView = 'week'; // 'week' | 'month' | 'day' | 'all' | 'trash'
   let lastCalendarView = 'week';
   let anchorDate = new Date();
   let selectedDateStr = toISODate(new Date());
@@ -905,9 +941,11 @@
   let editingColor = 'none';
   let revealedCreatedIds = new Set();
 
-  // Состояние фильтров в поиске
-  let activeColorFilter = 'all'; // 'all' | 'yellow' | 'peach' | ...
-  let activeStatusFilter = 'all'; // 'all' | 'open' | 'done'
+  let activeColorFilter = 'all';
+  let activeStatusFilter = 'all';
+
+  let lastDeletedTaskId = null;
+  let undoTimeout = null;
 
   tasks.forEach((t, idx) => {
     if (typeof t.order !== 'number') t.order = (idx + 1) * 1000;
@@ -1059,6 +1097,53 @@
     render();
   }
 
+  // --- КОРЗИНА И ОТМЕНА УДАЛЕНИЯ ---
+  function showUndoToast(taskId) {
+    lastDeletedTaskId = taskId;
+    const toast = document.getElementById('undoToast');
+    toast.classList.add('show');
+    if (undoTimeout) clearTimeout(undoTimeout);
+    undoTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+      lastDeletedTaskId = null;
+    }, 5000);
+  }
+
+  function undoLastDelete() {
+    if (!lastDeletedTaskId) return;
+    const t = tasks.find(x => x.id === lastDeletedTaskId);
+    if (t) {
+      t.deleted = false;
+      t.updatedAt = Date.now();
+      saveTasks();
+    }
+    lastDeletedTaskId = null;
+    document.getElementById('undoToast').classList.remove('show');
+  }
+
+  function restoreTask(id) {
+    const t = tasks.find(x => x.id === id);
+    if (t) {
+      t.deleted = false;
+      t.updatedAt = Date.now();
+      saveTasks();
+    }
+  }
+
+  function permanentDeleteTask(id) {
+    tasks = tasks.filter(x => x.id !== id);
+    saveTasks();
+  }
+
+  function emptyTrash() {
+    const count = tasks.filter(t => t.deleted).length;
+    if (!count) return;
+    if (confirm(`Удалить все записи из корзины (${count} шт.) навсегда?`)) {
+      tasks = tasks.filter(t => !t.deleted);
+      saveTasks();
+    }
+  }
+
   // --- ФИЛЬТРЫ В ПОИСКЕ ---
   function renderSearchFilters() {
     const bar = document.getElementById('colorFilterBar');
@@ -1102,7 +1187,6 @@
     document.getElementById('editRollover').checked = t.rollover !== false;
     document.getElementById('editCreatedInfo').textContent = `Создано: ${formatDateTimeStamp(t.createdAt || t.updatedAt)}`;
 
-    // Показываем кнопку быстрого перехода к дню, если у задачи есть дата
     const jumpBtn = document.getElementById('btnJumpToDay');
     jumpBtn.style.display = t.date ? 'inline-block' : 'none';
 
@@ -1198,14 +1282,23 @@
 
   function deleteActiveTask() {
     if (!editingTaskId) return;
-    const t = tasks.find(x => x.id === editingTaskId);
-    if (t) { t.deleted = true; t.updatedAt = Date.now(); saveTasks(); }
+    const deletedId = editingTaskId;
+    const t = tasks.find(x => x.id === deletedId);
+    if (t) {
+      t.deleted = true;
+      t.deletedAt = Date.now();
+      t.updatedAt = Date.now();
+      saveTasks();
+      showUndoToast(deletedId);
+    }
     editingTaskId = null;
     document.getElementById('taskModal').classList.remove('open');
   }
 
   // --- МОДАЛКА ФУНКЦИЙ ---
   function openFunctionsModal() {
+    const trashCount = tasks.filter(t => t.deleted).length;
+    document.getElementById('trashMenuBtn').textContent = `Открыть (${trashCount}) 🗑`;
     renderRecurringList();
     renderColorLabelsEditor();
     document.getElementById('functionsModal').classList.add('open');
@@ -1266,7 +1359,7 @@
   }
 
   function setView(v) {
-    if (v !== 'all') lastCalendarView = v;
+    if (v !== 'all' && v !== 'trash') lastCalendarView = v;
     currentView = v;
 
     document.getElementById('btnWeek').classList.toggle('active', v === 'week');
@@ -1280,6 +1373,9 @@
 
     if (v === 'all') {
       wrap.classList.add('open');
+      somedayBox.style.display = 'none';
+    } else if (v === 'trash') {
+      wrap.classList.remove('open');
       somedayBox.style.display = 'none';
     } else {
       wrap.classList.remove('open');
@@ -1300,7 +1396,7 @@
   }
 
   function shiftPeriod(dir) {
-    if (currentView === 'all') setView(lastCalendarView || 'week');
+    if (currentView === 'all' || currentView === 'trash') setView(lastCalendarView || 'week');
     if (currentView === 'week') anchorDate.setDate(anchorDate.getDate() + dir * 7);
     else if (currentView === 'month') anchorDate.setMonth(anchorDate.getMonth() + dir);
     else {
@@ -1311,7 +1407,7 @@
   }
 
   function goToday() {
-    if (currentView === 'all') setView(lastCalendarView || 'week');
+    if (currentView === 'all' || currentView === 'trash') setView(lastCalendarView || 'week');
     anchorDate = new Date();
     selectedDateStr = toISODate(anchorDate);
     render();
@@ -1344,7 +1440,6 @@
     reader.readAsText(file);
   }
 
-  // --- ВЫБОРКА И АВТОСОРТИРОВКА (выполненные задачи опускаются вниз дня) ---
   function getActiveTasks() {
     const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
     return tasks.filter(t => {
@@ -1357,7 +1452,6 @@
       if (!q) return true;
       return t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q);
     }).sort((a, b) => {
-      // Выполненные задачи автоматически опускаются в низ списка внутри дня
       if (Boolean(a.completed) !== Boolean(b.completed)) {
         return a.completed ? 1 : -1;
       }
@@ -1408,17 +1502,55 @@
   function render() {
     const todayStr = toISODate(new Date());
     const visibleTasks = getActiveTasks();
+    const deletedTasks = tasks.filter(t => t.deleted).sort((a, b) => (b.deletedAt || b.updatedAt || 0) - (a.deletedAt || a.updatedAt || 0));
 
     const monday = getMonday(anchorDate);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
 
-    document.getElementById('headerTitle').textContent = 
-      currentView === 'all' ? 'Поиск и задачи' : MONTHS_RU[anchorDate.getMonth()];
-    document.getElementById('weekRangeBadge').textContent = 
-      currentView === 'all' ? `${visibleTasks.length}` : `${monday.getDate()}–${sunday.getDate()}`;
+    if (currentView === 'all') {
+      document.getElementById('headerTitle').textContent = 'Поиск и задачи';
+      document.getElementById('weekRangeBadge').textContent = `${visibleTasks.length}`;
+    } else if (currentView === 'trash') {
+      document.getElementById('headerTitle').textContent = 'Корзина';
+      document.getElementById('weekRangeBadge').textContent = `${deletedTasks.length}`;
+    } else {
+      document.getElementById('headerTitle').textContent = MONTHS_RU[anchorDate.getMonth()];
+      document.getElementById('weekRangeBadge').textContent = `${monday.getDate()}–${sunday.getDate()}`;
+    }
 
     const main = document.getElementById('mainView');
+
+    // ЭКРАН КОРЗИНЫ
+    if (currentView === 'trash') {
+      main.innerHTML = `
+        <div class="day-block" style="border-bottom:none; padding-top:4px;">
+          <div class="day-header" style="margin-bottom:10px;">
+            <span class="day-name">Удаленные записи (${deletedTasks.length})</span>
+            ${deletedTasks.length ? `<button class="btn-mini" style="color:#ff3b30;" onclick="emptyTrash()">Очистить всё</button>` : ''}
+          </div>
+          <ul class="task-list">
+            ${deletedTasks.length ? deletedTasks.map(t => {
+              const hasHighlight = t.color && t.color !== 'none';
+              const bgCss = hasHighlight ? getColorCss(t.color) : 'transparent';
+              return `
+                <li class="task-item">
+                  <div class="task-body" style="cursor:default;">
+                    <span class="task-text ${hasHighlight ? 'highlighted' : ''}" style="background:${bgCss}">${escapeHTML(t.title)}</span>
+                    <div class="task-meta">
+                      <span>📅 ${formatShortDate(t.date, t.time)}</span>
+                    </div>
+                  </div>
+                  <button class="btn-mini" onclick="restoreTask('${t.id}')">Восстановить ↩</button>
+                  <button class="btn-mini" style="color:#ff3b30;" onclick="permanentDeleteTask('${t.id}')">✕</button>
+                </li>
+              `;
+            }).join('') : '<li style="padding:16px 0; color:var(--muted); font-size:14px;">Корзина пуста</li>'}
+          </ul>
+        </div>
+      `;
+      return;
+    }
 
     if (currentView === 'all') {
       renderSearchFilters();
