@@ -361,73 +361,63 @@
 
     /* ДНИ И ЗАДАЧИ */
     .day-block {
-      padding: 12px 2px 4px 2px;
+      padding: 10px 2px 4px 2px;
       border-bottom: 2px solid var(--line);
       transition: background-color 0.15s;
-    }
-
-    /* СЕТКА НЕДЕЛИ 4 строки × 2 столбца (Фиксированная высота + многоточие) */
-    .week-grid-2x4 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(4, 138px);
-      grid-auto-flow: column;
-      border-top: 1.5px solid var(--line);
-      border-left: 1.5px solid var(--line);
-      margin-top: 4px;
-    }
-
-    .week-grid-2x4 .day-block {
-      padding: 6px 6px 4px 6px;
-      border-right: 1.5px solid var(--line);
-      border-bottom: 1.5px solid var(--line);
-      min-width: 0;
-      height: 138px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .week-grid-2x4 .day-block.expanded-cell {
-      overflow-y: auto;
-    }
-
-    .week-grid-2x4 .day-name { font-size: 13px; }
-    .week-grid-2x4 .day-date { font-size: 11px; }
-    .week-grid-2x4 .task-item { padding: 4px 1px; font-size: 13px; gap: 5px; }
-    .week-grid-2x4 .checkbox { width: 16px; height: 16px; font-size: 10px; flex-shrink: 0; }
-    .week-grid-2x4 .task-body { min-width: 0; overflow: hidden; }
-    
-    /* Запрет переноса текста в таблице 2x4 (многоточие) */
-    .week-grid-2x4 .task-text {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    .week-grid-2x4 .task-text.highlighted { padding: 2px 5px; }
-    .week-grid-2x4 .drag-handle { padding: 3px; font-size: 13px; }
-    .week-grid-2x4 .add-input { height: 26px; font-size: 13px; margin-top: auto; }
-
-    .grid-more-badge {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      padding: 2px 4px;
-      cursor: pointer;
     }
 
     .day-header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
       margin-bottom: 4px;
+      padding: 3px 6px;
+      border-radius: 7px;
+      flex-shrink: 0;
+    }
+
+    .day-header-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .day-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       flex-shrink: 0;
     }
 
     .day-name { font-size: 16px; font-weight: 700; }
     .day-name.is-today { color: var(--today); }
     .day-date { font-size: 13px; color: var(--muted); }
+
+    /* Бейдж 3 букв в заголовке дня (Неделя и День) */
+    .day-inline-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(0,0,0,0.08);
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+    [data-theme="dark"] .day-inline-tag {
+      background: rgba(255,255,255,0.14);
+    }
+
+    .day-mark-trigger {
+      background: transparent;
+      border: none;
+      font-size: 13px;
+      padding: 2px 4px;
+      cursor: pointer;
+      opacity: 0.55;
+      color: var(--text);
+    }
 
     .task-list {
       list-style: none;
@@ -662,12 +652,12 @@
     }
     .cell-pill.done { opacity: 0.38; text-decoration: line-through; }
 
-    /* ФИНАНСЫ */
+    /* ФИНАНСЫ И СЧЕТА */
     .finance-summary-card {
       background: var(--surface-2);
       border-radius: 12px;
       padding: 10px 12px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
@@ -677,6 +667,26 @@
     .fin-stat-val { font-size: 15px; font-weight: 700; margin-top: 2px; display: block; }
     .fin-inc { color: var(--inc-color); }
     .fin-exp { color: var(--exp-color); }
+
+    .accounts-summary-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 6px;
+    }
+    .account-chip {
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .account-chip-name { color: var(--muted); font-weight: 500; }
+    .account-chip-val { font-weight: 700; color: var(--text); }
 
     .fin-pill-inc { background: var(--inc-bg); color: var(--inc-color); font-weight: 600; }
     .fin-pill-exp { background: var(--exp-bg); color: var(--exp-color); font-weight: 600; }
@@ -833,7 +843,7 @@
     </div>
   </header>
 
-  <!-- ПРОКРУЧИВАЕМАЯ ОБЛАСТЬ -->
+  <!-- ПРОКРУЧИВАЕМЫЙ КОНТЕНТ -->
   <main class="scroll-area" id="scrollArea">
     <div class="search-wrap" id="searchWrap">
       <input type="text" id="searchInput" class="search-bar" placeholder="Поиск по тексту или заметкам..." oninput="render()">
@@ -940,11 +950,6 @@
       <label class="form-label">Заметка</label>
       <textarea id="editNotes" class="form-textarea" rows="3" placeholder="Детали, мысли..."></textarea>
     </div>
-    <div class="form-row">
-      <label style="font-size:14px">
-        <input type="checkbox" id="editRollover"> Автоперенос на сегодня, если просрочено
-      </label>
-    </div>
     <div id="editCreatedInfo" style="font-size:11px; color:var(--muted); margin-bottom:12px;"></div>
     <div style="display:flex; justify-content:space-between; margin-top:8px;">
       <button class="btn-mini" onclick="setEditDateToSomeday()">В «Когда-нибудь»</button>
@@ -953,7 +958,7 @@
   </div>
 </div>
 
-<!-- ШТОРКА ПОКРАСКИ СТРОКИ ЧИСЛА И МЕТКИ (3 БУКВЫ) В МЕСЯЦЕ -->
+<!-- ШТОРКА ПОКРАСКИ ДНЯ И МЕТКИ (ОТОБРАЖАЕТСЯ В МЕСЯЦЕ, НЕДЕЛЕ И ДНЕ) -->
 <div class="modal-backdrop" id="dayMarkModal" onclick="if(event.target===this) closeDayMarkModal()">
   <div class="sheet">
     <div class="sheet-header">
@@ -961,11 +966,11 @@
       <button class="btn-mini" onclick="closeDayMarkModal()">Готово</button>
     </div>
     <div class="form-row">
-      <label class="form-label">Метка справа от числа (до 3 букв, например: ВЫХ, ДР, ЗП)</label>
+      <label class="form-label">Метка дня (до 3 букв, например: ВЫХ, ДР, ЗП)</label>
       <input type="text" id="dayMarkLabelInput" class="form-input" maxlength="3" placeholder="До 3 символов..." style="font-weight:700; text-transform:uppercase;">
     </div>
     <div class="form-row">
-      <label class="form-label">Цвет верхней строки с числом</label>
+      <label class="form-label">Цвет строки дня (в Месяце, Неделе и Дне)</label>
       <div class="color-picker" id="dayMarkColorPicker"></div>
     </div>
     <div style="display:flex; justify-content:flex-end; margin-top:12px;">
@@ -1000,9 +1005,13 @@
         <select id="editFinCategory" class="form-select"></select>
       </div>
       <div>
-        <label class="form-label">Дата</label>
-        <input type="date" id="editFinDate" class="form-input">
+        <label class="form-label">Счет (откуда / куда)</label>
+        <select id="editFinAccount" class="form-select"></select>
       </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Дата</label>
+      <input type="date" id="editFinDate" class="form-input">
     </div>
     <div class="form-row">
       <label class="form-label">Заметка к записи</label>
@@ -1024,14 +1033,6 @@
     </div>
 
     <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-size:15px; font-weight:500;">Вид вкладки «Неделя»</span>
-      <div style="display:flex; gap:4px;">
-        <button class="btn-mini" id="btnLayoutList" onclick="setWeekLayout('list')">Список</button>
-        <button class="btn-mini" id="btnLayoutGrid" onclick="setWeekLayout('grid')">Таблица 2×4</button>
-      </div>
-    </div>
-
-    <div class="menu-section" style="display:flex; justify-content:space-between; align-items:center;">
       <span style="font-size:15px; font-weight:500;">Корзина удаленных задач</span>
       <button class="btn-mini" onclick="closeFunctionsModal(); setView('trash');" id="trashMenuBtn">Открыть (0) 🗑</button>
     </div>
@@ -1046,6 +1047,17 @@
       <button class="btn-mini" onclick="forceUpdateApp()">Обновить ↻</button>
     </div>
 
+    <!-- Управление Счетами финансов -->
+    <div class="menu-section">
+      <label class="form-label" style="font-weight:600; color:var(--text);">Счета финансов (откуда / куда)</label>
+      <div id="finAccountsManager" style="margin:6px 0;"></div>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <input type="text" id="newFinAccInput" class="form-input" placeholder="Новый счет (напр. Карта, Наличные)..." style="flex:1; padding:6px 8px; font-size:14px;">
+        <button class="btn-mini" onclick="addFinanceAccount()">+</button>
+      </div>
+    </div>
+
+    <!-- Управление Категориями финансов -->
     <div class="menu-section">
       <label class="form-label" style="font-weight:600; color:var(--text);">Категории финансов (Доходы и Расходы)</label>
       <div id="finCategoriesManager" style="margin:6px 0;"></div>
@@ -1134,7 +1146,6 @@
   let config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
 
   if (!config.theme) config.theme = 'light';
-  if (!config.weekLayout) config.weekLayout = 'list';
   if (!Array.isArray(config.recurring)) config.recurring = [];
   if (!config.colorNames) config.colorNames = {};
   if (!config.dayMarks) config.dayMarks = {};
@@ -1143,6 +1154,9 @@
       income: ['Зарплата', 'Подработка'],
       expense: ['Продукты', 'Дом', 'Разное']
     };
+  }
+  if (!Array.isArray(config.finAccounts) || !config.finAccounts.length) {
+    config.finAccounts = ['Карта', 'Наличные'];
   }
 
   let currentView = 'week';
@@ -1236,19 +1250,12 @@
     return Math.max(...sameDay.map(t => t.order || 0)) + 1000;
   }
 
-  function autoRolloverAndRecurring() {
+  // Генерация только повторяющихся шаблонов (автоперенос просроченных задач отключен)
+  function spawnRecurringTasks() {
     const now = new Date();
     const todayStr = toISODate(now);
     const dayOfWeek = now.getDay();
     let changed = false;
-
-    tasks.forEach(t => {
-      if (!t.deleted && t.date && t.date < todayStr && !t.completed && t.rollover !== false) {
-        t.date = todayStr;
-        t.updatedAt = Date.now();
-        changed = true;
-      }
-    });
 
     config.recurring.forEach(rule => {
       const shouldSpawn =
@@ -1267,7 +1274,6 @@
           color: 'none',
           subtasks: [],
           completed: false,
-          rollover: true,
           deleted: false,
           order: getNextOrderForDate(todayStr),
           createdAt: nowTs,
@@ -1299,7 +1305,6 @@
       color: 'none',
       subtasks: [],
       completed: false,
-      rollover: true,
       deleted: false,
       order: getNextOrderForDate(dateStr),
       createdAt: nowTs,
@@ -1324,7 +1329,9 @@
     render();
   }
 
-  function openDayMarkModal(dateStr) {
+  // --- ОТМЕТКА И ПОКРАСКА ДНЯ (СИНХРОННО В МЕСЯЦЕ, НЕДЕЛЕ И ДНЕ) ---
+  function openDayMarkModal(dateStr, ev) {
+    if (ev) ev.stopPropagation();
     markingDateStr = dateStr;
     const current = config.dayMarks[dateStr] || { color: 'none', label: '' };
     markingColor = current.color || 'none';
@@ -1372,6 +1379,7 @@
     document.getElementById('dayMarkModal').classList.remove('open');
   }
 
+  // --- ФИНАНСЫ (ДОХОДЫ, РАСХОДЫ, СЧЕТА И КАТЕГОРИИ) ---
   function setQuickFinType(type) {
     quickFinType = type;
     render();
@@ -1380,13 +1388,16 @@
   function addFinEntry(dateStr) {
     const amtEl = document.getElementById('quickFinAmount');
     const catEl = document.getElementById('quickFinCategory');
+    const accEl = document.getElementById('quickFinAccount');
     const noteEl = document.getElementById('quickFinNote');
     if (!amtEl) return;
     const amount = parseFloat(amtEl.value);
     if (!amount || amount <= 0) return;
 
     const listCats = config.finCategories[quickFinType] || [];
+    const listAccs = config.finAccounts || [];
     const category = (catEl && catEl.value) ? catEl.value : (listCats[0] || (quickFinType === 'income' ? 'Доход' : 'Расход'));
+    const account = (accEl && accEl.value) ? accEl.value : (listAccs[0] || 'Основной');
     const notes = noteEl ? noteEl.value.trim() : '';
     const nowTs = Date.now();
 
@@ -1396,6 +1407,7 @@
       type: quickFinType,
       amount,
       category,
+      account,
       notes,
       createdAt: nowTs,
       updatedAt: nowTs
@@ -1412,6 +1424,7 @@
     editingFinId = id;
     document.getElementById('editFinType').value = item.type || 'income';
     populateEditFinCategories(item.category);
+    populateEditFinAccounts(item.account);
     document.getElementById('editFinAmount').value = item.amount;
     document.getElementById('editFinDate').value = item.date;
     document.getElementById('editFinNotes').value = item.notes || '';
@@ -1429,6 +1442,15 @@
     if (selectedCat) sel.value = selectedCat;
   }
 
+  function populateEditFinAccounts(selectedAcc) {
+    const accs = [...(config.finAccounts || [])];
+    if (selectedAcc && !accs.includes(selectedAcc)) accs.push(selectedAcc);
+    if (!accs.length) accs.push('Основной');
+    const sel = document.getElementById('editFinAccount');
+    sel.innerHTML = accs.map(a => `<option value="${escapeHTML(a)}">${escapeHTML(a)}</option>`).join('');
+    if (selectedAcc) sel.value = selectedAcc;
+  }
+
   function closeFinModal() {
     if (editingFinId) {
       const item = finances.find(x => x.id === editingFinId);
@@ -1437,6 +1459,7 @@
         if (amt && amt > 0) item.amount = amt;
         item.type = document.getElementById('editFinType').value;
         item.category = document.getElementById('editFinCategory').value;
+        item.account = document.getElementById('editFinAccount').value;
         item.date = document.getElementById('editFinDate').value || item.date;
         item.notes = document.getElementById('editFinNotes').value;
         item.updatedAt = Date.now();
@@ -1455,6 +1478,7 @@
     saveFinances();
   }
 
+  // --- КОРЗИНА И ОТМЕНА УДАЛЕНИЯ ---
   function showUndoToast(taskId) {
     lastDeletedTaskId = taskId;
     const toast = document.getElementById('undoToast');
@@ -1539,7 +1563,6 @@
     document.getElementById('editDate').value = t.date || '';
     document.getElementById('editTime').value = t.time || '';
     document.getElementById('editNotes').value = t.notes || '';
-    document.getElementById('editRollover').checked = t.rollover !== false;
     document.getElementById('editCreatedInfo').textContent = `Создано: ${formatDateTimeStamp(t.createdAt || t.updatedAt)}`;
 
     const jumpBtn = document.getElementById('btnJumpToDay');
@@ -1626,7 +1649,6 @@
         t.time = document.getElementById('editTime').value || '';
         t.notes = document.getElementById('editNotes').value;
         t.color = editingColor;
-        t.rollover = document.getElementById('editRollover').checked;
         t.updatedAt = Date.now();
         saveTasks();
       }
@@ -1653,8 +1675,7 @@
   function openFunctionsModal() {
     const trashCount = tasks.filter(t => t.deleted).length;
     document.getElementById('trashMenuBtn').textContent = `Открыть (${trashCount}) 🗑`;
-    document.getElementById('btnLayoutList').classList.toggle('active', config.weekLayout !== 'grid');
-    document.getElementById('btnLayoutGrid').classList.toggle('active', config.weekLayout === 'grid');
+    renderFinAccountsManager();
     renderFinCategoriesManager();
     renderRecurringList();
     renderColorLabelsEditor();
@@ -1665,12 +1686,35 @@
     render();
   }
 
-  function setWeekLayout(mode) {
-    config.weekLayout = mode;
-    saveConfig();
-    document.getElementById('btnLayoutList').classList.toggle('active', mode !== 'grid');
-    document.getElementById('btnLayoutGrid').classList.toggle('active', mode === 'grid');
-    render();
+  function renderFinAccountsManager() {
+    const box = document.getElementById('finAccountsManager');
+    const accs = config.finAccounts || [];
+    box.innerHTML = accs.map((a, i) => `
+      <span style="display:inline-flex; align-items:center; gap:4px; background:var(--surface-2); padding:3px 8px; border-radius:6px; margin:2px; font-size:12px;">
+        💳 ${escapeHTML(a)} <b style="cursor:pointer; color:var(--muted)" onclick="removeFinanceAccount(${i})">×</b>
+      </span>
+    `).join('') || '<span style="font-size:12px; color:var(--muted)">Нет счетов</span>';
+  }
+
+  function addFinanceAccount() {
+    const inp = document.getElementById('newFinAccInput');
+    const name = inp.value.trim();
+    if (!name) return;
+    if (!Array.isArray(config.finAccounts)) config.finAccounts = [];
+    if (!config.finAccounts.includes(name)) {
+      config.finAccounts.push(name);
+      saveConfig();
+    }
+    inp.value = '';
+    renderFinAccountsManager();
+  }
+
+  function removeFinanceAccount(idx) {
+    if (config.finAccounts) {
+      config.finAccounts.splice(idx, 1);
+      saveConfig();
+      renderFinAccountsManager();
+    }
   }
 
   function renderFinCategoriesManager() {
@@ -1750,7 +1794,7 @@
     config.recurring.push({ title, freq: sel.value, lastSpawned: '' });
     inp.value = '';
     saveConfig();
-    autoRolloverAndRecurring();
+    spawnRecurringTasks();
     renderRecurringList();
   }
 
@@ -1922,8 +1966,7 @@
     const hideBottomSomeday =
       currentView === 'all' ||
       currentView === 'trash' ||
-      currentView === 'finance' ||
-      (currentView === 'week' && config.weekLayout === 'grid');
+      currentView === 'finance';
     somedayBox.style.display = hideBottomSomeday ? 'none' : 'block';
 
     if (currentView === 'all') {
@@ -1942,6 +1985,7 @@
 
     const main = document.getElementById('mainView');
 
+    // 1. КОРЗИНА
     if (currentView === 'trash') {
       main.innerHTML = `
         <div class="day-block" style="border-bottom:none; padding-top:4px;">
@@ -1972,6 +2016,7 @@
       return;
     }
 
+    // 2. ПОИСК И ВСЕ ЗАДАЧИ
     if (currentView === 'all') {
       renderSearchFilters();
       const sortedAll = [...visibleTasks].sort((a, b) => {
@@ -1996,6 +2041,7 @@
       return;
     }
 
+    // 3. ФИНАНСЫ (С выбором счета и балансами по счетам)
     if (currentView === 'finance') {
       const year = anchorDate.getFullYear();
       const month = anchorDate.getMonth();
@@ -2005,6 +2051,24 @@
       const totalInc = monthEntries.filter(f => f.type === 'income').reduce((s, f) => s + (Number(f.amount) || 0), 0);
       const totalExp = monthEntries.filter(f => f.type === 'expense').reduce((s, f) => s + (Number(f.amount) || 0), 0);
       const net = totalInc - totalExp;
+
+      // Считаем движение по каждому счету за выбранный месяц
+      const allAccounts = [...(config.finAccounts || [])];
+      monthEntries.forEach(f => {
+        if (f.account && !allAccounts.includes(f.account)) allAccounts.push(f.account);
+      });
+
+      const accountsHtml = allAccounts.map(accName => {
+        const accInc = monthEntries.filter(f => (f.account || allAccounts[0]) === accName && f.type === 'income').reduce((s, f) => s + (Number(f.amount) || 0), 0);
+        const accExp = monthEntries.filter(f => (f.account || allAccounts[0]) === accName && f.type === 'expense').reduce((s, f) => s + (Number(f.amount) || 0), 0);
+        const accNet = accInc - accExp;
+        return `
+          <div class="account-chip">
+            <span class="account-chip-name">💳 ${escapeHTML(accName)}:</span>
+            <span class="account-chip-val">${accNet >= 0 ? '+' : ''}${formatMoney(accNet)}</span>
+          </div>
+        `;
+      }).join('');
 
       const firstDay = new Date(year, month, 1);
       const startOffset = (firstDay.getDay() + 6) % 7;
@@ -2025,6 +2089,7 @@
             <span class="fin-stat-val">${net >= 0 ? '+' : ''}${formatMoney(net)}</span>
           </div>
         </div>
+        ${accountsHtml ? `<div class="accounts-summary-bar">${accountsHtml}</div>` : ''}
         <div class="month-grid">
       `;
 
@@ -2062,6 +2127,7 @@
 
       const selEntries = finances.filter(f => f.date === selectedDateStr);
       const availCats = config.finCategories[quickFinType] || [];
+      const availAccs = config.finAccounts || ['Основной'];
 
       finHtml += `
         <div class="day-block" style="border-bottom:none;">
@@ -2073,12 +2139,15 @@
             </div>
           </div>
 
-          <div style="display:flex; gap:6px; margin-bottom:8px;">
-            <input type="number" inputmode="decimal" id="quickFinAmount" class="form-input" placeholder="Сумма..." style="flex:1; padding:7px 10px;">
-            <select id="quickFinCategory" class="form-select" style="flex:1; padding:7px 8px;">
+          <div style="display:flex; gap:6px; margin-bottom:6px;">
+            <input type="number" inputmode="decimal" id="quickFinAmount" class="form-input" placeholder="Сумма..." style="flex:1.1; padding:7px 10px;">
+            <select id="quickFinCategory" class="form-select" style="flex:1; padding:7px 6px; font-size:13px;" title="Категория">
               ${availCats.length ? availCats.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('') : `<option value="${quickFinType === 'income' ? 'Доход' : 'Расход'}">${quickFinType === 'income' ? 'Доход' : 'Расход'}</option>`}
             </select>
-            <button class="btn-mini active" onclick="addFinEntry('${selectedDateStr}')" style="padding:0 14px;">+</button>
+            <select id="quickFinAccount" class="form-select" style="flex:1; padding:7px 6px; font-size:13px;" title="Счет">
+              ${availAccs.map(a => `<option value="${escapeHTML(a)}">💳 ${escapeHTML(a)}</option>`).join('')}
+            </select>
+            <button class="btn-mini active" onclick="addFinEntry('${selectedDateStr}')" style="padding:0 12px;">+</button>
           </div>
           <input type="text" id="quickFinNote" class="form-input" placeholder="Заметка (необязательно)..." style="padding:6px 10px; font-size:13px; margin-bottom:10px;"
                  onkeydown="if(event.key==='Enter'){addFinEntry('${selectedDateStr}'); this.blur();}">
@@ -2090,7 +2159,11 @@
                   ${f.type === 'income' ? '+' : '−'}${formatMoney(f.amount)}
                 </span>
                 <div class="task-body">
-                  <span class="task-text" style="font-weight:600;">${escapeHTML(f.category)}</span>${f.notes ? `<div class="task-meta"><span>📝 ${escapeHTML(f.notes)}</span></div>` : ''}
+                  <span class="task-text" style="font-weight:600;">${escapeHTML(f.category)}</span>
+                  <div class="task-meta">
+                    <span>💳 ${escapeHTML(f.account || availAccs[0] || 'Счет')}</span>
+                    ${f.notes ? `<span>📝 ${escapeHTML(f.notes)}</span>` : ''}
+                  </div>
                 </div>
               </li>
             `).join('')}
@@ -2102,20 +2175,9 @@
       return;
     }
 
+    // 4. НЕДЕЛЯ (С отображением покраски дня и 3-буквенной метки из Месяца)
     if (currentView === 'week') {
-      const SHORT_WEEK_NAMES = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-      const isGrid = config.weekLayout === 'grid';
-      const MAX_GRID_TASKS = 2;
-      window.expandedGridCells = window.expandedGridCells || new Set();
-
-      window.toggleGridCellExpand = function(key, ev) {
-        ev.stopPropagation();
-        if (window.expandedGridCells.has(key)) window.expandedGridCells.delete(key);
-        else window.expandedGridCells.add(key);
-        render();
-      };
-
-      let html = isGrid ? `<div class="week-grid-2x4">` : '';
+      let html = '';
 
       for (let i = 0; i < 7; i++) {
         const cur = new Date(monday);
@@ -2123,23 +2185,24 @@
         const dateStr = toISODate(cur);
         const dayTasks = visibleTasks.filter(t => t.date === dateStr);
         const isToday = dateStr === todayStr;
-        const dayTitle = isGrid ? SHORT_WEEK_NAMES[cur.getDay()] : DAYS_RU[cur.getDay()];
-
-        const isExpanded = window.expandedGridCells.has(dateStr);
-        const shownTasks = (isGrid && !isExpanded) ? dayTasks.slice(0, MAX_GRID_TASKS) : dayTasks;
-        const hiddenCount = dayTasks.length - shownTasks.length;
+        const mark = config.dayMarks[dateStr];
+        const headerBg = (mark && mark.color && mark.color !== 'none') ? getColorCss(mark.color) : 'transparent';
 
         html += `
-          <div class="day-block ${isExpanded ? 'expanded-cell' : ''}" data-drop-date="${dateStr}">
-            <div class="day-header">
-              <span class="day-name ${isToday ? 'is-today' : ''}" onclick="openDayTimeline('${dateStr}')" style="cursor:pointer">
-                ${dayTitle}
-              </span>
-              <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
+          <div class="day-block" data-drop-date="${dateStr}">
+            <div class="day-header" style="background:${headerBg}">
+              <div class="day-header-left">
+                <span class="day-name ${isToday ? 'is-today' : ''}" onclick="openDayTimeline('${dateStr}')" style="cursor:pointer">
+                  ${DAYS_RU[cur.getDay()]}
+                </span>
+                ${mark && mark.label ? `<span class="day-inline-tag">${escapeHTML(mark.label)}</span>` : ''}
+              </div>
+              <div class="day-header-right">
+                <span class="day-date">${cur.getDate()}.${('0'+(cur.getMonth()+1)).slice(-2)}</span>
+                <button class="day-mark-trigger" onclick="openDayMarkModal('${dateStr}', event)" title="Отметить день">🎨</button>
+              </div>
             </div>
-            <ul class="task-list" data-list-date="${dateStr}">${shownTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
-            ${(isGrid && hiddenCount > 0) ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('${dateStr}', event)">+${hiddenCount} ещё</div>` : ''}
-            ${(isGrid && isExpanded && dayTasks.length > MAX_GRID_TASKS) ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('${dateStr}', event)">Свернуть ▲</div>` : ''}
+            <ul class="task-list" data-list-date="${dateStr}">${dayTasks.map(t => renderTaskItem(t, false)).join('')}</ul>
             <input type="text" class="add-input" aria-label="Новая задача"
                    onkeydown="if(event.key==='Enter'){addTask('${dateStr}', null, this); this.blur();}"
                    onblur="addTask('${dateStr}', null, this)">
@@ -2147,30 +2210,10 @@
         `;
       }
 
-      if (isGrid) {
-        const somedayTasks = visibleTasks.filter(t => !t.date);
-        const isExpanded = window.expandedGridCells.has('__SOMEDAY__');
-        const shownSomeday = isExpanded ? somedayTasks : somedayTasks.slice(0, MAX_GRID_TASKS);
-        const hiddenSomeday = somedayTasks.length - shownSomeday.length;
-
-        html += `
-          <div class="day-block ${isExpanded ? 'expanded-cell' : ''}" data-drop-date="__SOMEDAY__" style="background:var(--surface-2);">
-            <div class="day-header">
-              <span class="day-name">Когда-нибудь</span>
-            </div>
-            <ul class="task-list" data-list-date="__SOMEDAY__">${shownSomeday.map(t => renderTaskItem(t, false)).join('')}</ul>
-            ${hiddenSomeday > 0 ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('__SOMEDAY__', event)">+${hiddenSomeday} ещё</div>` : ''}
-            ${(isExpanded && somedayTasks.length > MAX_GRID_TASKS) ? `<div class="grid-more-badge" onclick="toggleGridCellExpand('__SOMEDAY__', event)">Свернуть ▲</div>` : ''}
-            <input type="text" class="add-input" aria-label="Новая задача"
-                   onkeydown="if(event.key==='Enter'){addTask(null, null, this); this.blur();}"
-                   onblur="addTask(null, null, this)">
-          </div>
-        </div>`;
-      }
-
       main.innerHTML = html;
 
     } else if (currentView === 'month') {
+      // 5. МЕСЯЦ
       const year = anchorDate.getFullYear();
       const month = anchorDate.getMonth();
       const firstDay = new Date(year, month, 1);
@@ -2215,12 +2258,18 @@
       gridHtml += `</div>`;
 
       const selTasks = visibleTasks.filter(t => t.date === selectedDateStr);
+      const selMark = config.dayMarks[selectedDateStr];
+      const selHeaderBg = (selMark && selMark.color && selMark.color !== 'none') ? getColorCss(selMark.color) : 'transparent';
+
       gridHtml += `
         <div class="day-block" data-drop-date="${selectedDateStr}">
-          <div class="day-header">
-            <span class="day-name">${selectedDateStr}</span>
-            <div style="display:flex; gap:6px;">
-              <button class="btn-mini" onclick="openDayMarkModal('${selectedDateStr}')">Отметить день 🎨</button>
+          <div class="day-header" style="background:${selHeaderBg}">
+            <div class="day-header-left">
+              <span class="day-name">${selectedDateStr}</span>
+              ${selMark && selMark.label ? `<span class="day-inline-tag">${escapeHTML(selMark.label)}</span>` : ''}
+            </div>
+            <div class="day-header-right">
+              <button class="btn-mini" onclick="openDayMarkModal('${selectedDateStr}', event)">Отметить день 🎨</button>
               <button class="btn-mini" onclick="openDayTimeline('${selectedDateStr}')">По часам →</button>
             </div>
           </div>
@@ -2233,15 +2282,24 @@
       main.innerHTML = gridHtml;
 
     } else if (currentView === 'day') {
+      // 6. ДЕНЬ (С отображением покраски дня и 3-буквенной метки из Месяца)
       const dateStr = toISODate(anchorDate);
       const dayTasks = visibleTasks.filter(t => t.date === dateStr);
       const untimed = dayTasks.filter(t => !t.time);
+      const mark = config.dayMarks[dateStr];
+      const headerBg = (mark && mark.color && mark.color !== 'none') ? getColorCss(mark.color) : 'transparent';
 
       let html = `
         <div class="day-block" data-drop-date="${dateStr}" data-drop-time="__CLEAR__">
-          <div class="day-header">
-            <span class="day-name">${DAYS_RU[anchorDate.getDay()]}</span>
-            <span class="day-date">${dateStr}</span>
+          <div class="day-header" style="background:${headerBg}">
+            <div class="day-header-left">
+              <span class="day-name">${DAYS_RU[anchorDate.getDay()]}</span>
+              ${mark && mark.label ? `<span class="day-inline-tag">${escapeHTML(mark.label)}</span>` : ''}
+            </div>
+            <div class="day-header-right">
+              <span class="day-date">${dateStr}</span>
+              <button class="day-mark-trigger" onclick="openDayMarkModal('${dateStr}', event)" title="Отметить день">🎨</button>
+            </div>
           </div>
           <ul class="task-list" data-list-date="${dateStr}">${untimed.map(t => renderTaskItem(t, false)).join('')}</ul>
           <input type="text" class="add-input" aria-label="Новая задача"
@@ -2454,7 +2512,7 @@
     finishDrag(e.clientX, e.clientY);
   });
 
-  autoRolloverAndRecurring();
+  spawnRecurringTasks();
   render();
 </script>
 </body>
