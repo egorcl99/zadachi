@@ -1155,8 +1155,14 @@
       expense: ['Продукты', 'Дом', 'Разное']
     };
   }
-  if (!Array.isArray(config.finAccounts) || !config.finAccounts.length) {
+ if (!Array.isArray(config.finAccounts) || !config.finAccounts.length) {
     config.finAccounts = ['Карта', 'Наличные'];
+  }
+  if (!config.finAccountColors) config.finAccountColors = {};
+
+  function getAccColorCss(accName) {
+    const cId = (config.finAccountColors || {})[accName];
+    return (cId && cId !== 'none') ? getColorCss(cId) : 'var(--surface-2)';
   }
 
   let currentView = 'week';
@@ -1689,11 +1695,29 @@
   function renderFinAccountsManager() {
     const box = document.getElementById('finAccountsManager');
     const accs = config.finAccounts || [];
-    box.innerHTML = accs.map((a, i) => `
-      <span style="display:inline-flex; align-items:center; gap:4px; background:var(--surface-2); padding:3px 8px; border-radius:6px; margin:2px; font-size:12px;">
-        💳 ${escapeHTML(a)} <b style="cursor:pointer; color:var(--muted)" onclick="removeFinanceAccount(${i})">×</b>
-      </span>
-    `).join('') || '<span style="font-size:12px; color:var(--muted)">Нет счетов</span>';
+    box.innerHTML = accs.map((a, i) => {
+      const bg = getAccColorCss(a);
+      return `
+        <span style="display:inline-flex; align-items:center; gap:6px; background:${bg}; padding:4px 9px; border-radius:8px; margin:2px; font-size:12px; font-weight:600; border:1px solid var(--border);">
+          <span onclick="cycleFinAccountColor(${i})" title="Нажмите, чтобы сменить цвет счета" style="width:13px; height:13px; border-radius:50%; background:${bg}; border:1.5px solid var(--text); cursor:pointer; display:inline-block;"></span>
+          <span onclick="cycleFinAccountColor(${i})" style="cursor:pointer;">${escapeHTML(a)}</span>
+          <b style="cursor:pointer; color:var(--muted); margin-left:2px;" onclick="removeFinanceAccount(${i})">×</b>
+        </span>
+      `;
+    }).join('') || '<span style="font-size:12px; color:var(--muted)">Нет счетов</span>';
+  }
+
+  function cycleFinAccountColor(idx) {
+    const accName = (config.finAccounts || [])[idx];
+    if (!accName) return;
+    if (!config.finAccountColors) config.finAccountColors = {};
+    const cur = config.finAccountColors[accName] || 'none';
+    const curPaletteIdx = PALETTE.findIndex(p => p.id === cur);
+    const nextPaletteIdx = (curPaletteIdx + 1) % PALETTE.length;
+    config.finAccountColors[accName] = PALETTE[nextPaletteIdx].id;
+    saveConfig();
+    renderFinAccountsManager();
+    render();
   }
 
   function addFinanceAccount() {
@@ -1711,7 +1735,9 @@
 
   function removeFinanceAccount(idx) {
     if (config.finAccounts) {
+      const removed = config.finAccounts[idx];
       config.finAccounts.splice(idx, 1);
+      if (removed && config.finAccountColors) delete config.finAccountColors[removed];
       saveConfig();
       renderFinAccountsManager();
     }
@@ -2058,13 +2084,14 @@
         if (f.account && !allAccounts.includes(f.account)) allAccounts.push(f.account);
       });
 
-      const accountsHtml = allAccounts.map(accName => {
+const accountsHtml = allAccounts.map(accName => {
         const accInc = monthEntries.filter(f => (f.account || allAccounts[0]) === accName && f.type === 'income').reduce((s, f) => s + (Number(f.amount) || 0), 0);
         const accExp = monthEntries.filter(f => (f.account || allAccounts[0]) === accName && f.type === 'expense').reduce((s, f) => s + (Number(f.amount) || 0), 0);
         const accNet = accInc - accExp;
+        const accBg = getAccColorCss(accName);
         return `
-          <div class="account-chip">
-            <span class="account-chip-name">💳 ${escapeHTML(accName)}:</span>
+          <div class="account-chip" style="background:${accBg};">
+            <span class="account-chip-name" style="color:var(--text); opacity:0.75;">${escapeHTML(accName)}:</span>
             <span class="account-chip-val">${accNet >= 0 ? '+' : ''}${formatMoney(accNet)}</span>
           </div>
         `;
@@ -2145,7 +2172,7 @@
               ${availCats.length ? availCats.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('') : `<option value="${quickFinType === 'income' ? 'Доход' : 'Расход'}">${quickFinType === 'income' ? 'Доход' : 'Расход'}</option>`}
             </select>
             <select id="quickFinAccount" class="form-select" style="flex:1; padding:7px 6px; font-size:13px;" title="Счет">
-              ${availAccs.map(a => `<option value="${escapeHTML(a)}">💳 ${escapeHTML(a)}</option>`).join('')}
+              ${availAccs.map(a => `<option value="${escapeHTML(a)}">${escapeHTML(a)}</option>`).join('')}
             </select>
             <button class="btn-mini active" onclick="addFinEntry('${selectedDateStr}')" style="padding:0 12px;">+</button>
           </div>
@@ -2153,20 +2180,24 @@
                  onkeydown="if(event.key==='Enter'){addFinEntry('${selectedDateStr}'); this.blur();}">
 
           <ul class="task-list">
-            ${selEntries.map(f => `
-              <li class="task-item" onclick="openFinModal('${f.id}')" style="cursor:pointer;">
-                <span class="cell-pill ${f.type === 'income' ? 'fin-pill-inc' : 'fin-pill-exp'}" style="font-size:13px; padding:3px 8px;">
-                  ${f.type === 'income' ? '+' : '−'}${formatMoney(f.amount)}
-                </span>
-                <div class="task-body">
-                  <span class="task-text" style="font-weight:600;">${escapeHTML(f.category)}</span>
-                  <div class="task-meta">
-                    <span>💳 ${escapeHTML(f.account || availAccs[0] || 'Счет')}</span>
-                    ${f.notes ? `<span>📝 ${escapeHTML(f.notes)}</span>` : ''}
+            ${selEntries.map(f => {
+              const accName = f.account || availAccs[0] || 'Счет';
+              const accBg = getAccColorCss(accName);
+              return `
+                <li class="task-item" onclick="openFinModal('${f.id}')" style="cursor:pointer;">
+                  <span class="cell-pill ${f.type === 'income' ? 'fin-pill-inc' : 'fin-pill-exp'}" style="font-size:13px; padding:3px 8px;">
+                    ${f.type === 'income' ? '+' : '−'}${formatMoney(f.amount)}
+                  </span>
+                  <div class="task-body">
+                    <span class="task-text" style="font-weight:600;">${escapeHTML(f.category)}</span>
+                    <div class="task-meta" style="align-items:center;">
+                      <span style="background:${accBg}; color:var(--text); padding:1px 6px; border-radius:4px; font-weight:600;">${escapeHTML(accName)}</span>
+                      ${f.notes ? `<span>📝 ${escapeHTML(f.notes)}</span>` : ''}
+                    </div>
                   </div>
-                </div>
-              </li>
-            `).join('')}
+                </li>
+              `;
+            }).join('')}
           </ul>
         </div>
       `;
